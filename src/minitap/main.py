@@ -253,6 +253,8 @@ async def run_automation(
     if last_state and last_state.agents_thoughts:
         last_msg = last_state.agents_thoughts[-1]
         logger.info(str(last_msg))
+        logger.info("Writing output: " + str(last_msg))
+        logger.info("Results output path: " + str(results_output_path))
         record_events(output_path=results_output_path, events=last_msg)
         return last_msg
     return None
