@@ -24,6 +24,8 @@ class Settings(BaseSettings):
 
     DEVICE_SCREEN_API_BASE_URL: Optional[str] = None
     DEVICE_HARDWARE_BRIDGE_BASE_URL: Optional[str] = None
+    ADB_HOST: Optional[str] = None
+    ADB_PORT: Optional[int] = None
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from langchain_core.messages import BaseMessage
 from mobile_use.config import record_events
-from mobile_use.context import get_execution_setup
+from mobile_use.context import MobileUseContext
 from mobile_use.controllers.mobile_command_controller import take_screenshot
 from mobile_use.utils.logger import get_logger
 from mobile_use.utils.media import compress_base64_jpeg
@@ -12,9 +12,12 @@ from mobile_use.utils.media import compress_base64_jpeg
 logger = get_logger(__name__)
 
 
-def record_interaction(response: BaseMessage):
+def record_interaction(ctx: MobileUseContext, response: BaseMessage):
+    if not ctx.execution_setup:
+        raise ValueError("No execution setup found")
+
     logger.info("Recording interaction")
-    screenshot_base64 = take_screenshot()
+    screenshot_base64 = take_screenshot(ctx)
     logger.info("Screenshot taken")
     try:
         compressed_screenshot_base64 = compress_base64_jpeg(screenshot_base64, 20)
@@ -23,7 +26,7 @@ def record_interaction(response: BaseMessage):
         return "Could not record this interaction"
     timestamp = time.time()
     folder = (
-        Path(__file__).parent.joinpath(f"../../traces/{get_execution_setup().trace_id}").resolve()
+        Path(__file__).parent.joinpath(f"../../traces/{ctx.execution_setup.trace_id}").resolve()
     )
     folder.mkdir(parents=True, exist_ok=True)
     try:

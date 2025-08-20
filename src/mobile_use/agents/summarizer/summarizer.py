@@ -4,23 +4,31 @@ from langchain_core.messages import (
     ToolMessage,
 )
 from mobile_use.constants import MAX_MESSAGES_IN_HISTORY
+from mobile_use.context import MobileUseContext
 from mobile_use.graph.state import State
 
 
-def summarizer_node(state: State):
-    if len(state.messages) <= MAX_MESSAGES_IN_HISTORY:
-        return {}
+class SummarizerNode:
+    def __init__(self, ctx: MobileUseContext):
+        self.ctx = ctx
 
-    nb_removal_candidates = len(state.messages) - MAX_MESSAGES_IN_HISTORY
+    def __call__(self, state: State):
+        if len(state.messages) <= MAX_MESSAGES_IN_HISTORY:
+            return {}
 
-    remove_messages = []
-    start_removal = False
+        nb_removal_candidates = len(state.messages) - MAX_MESSAGES_IN_HISTORY
 
-    for msg in reversed(state.messages[:nb_removal_candidates]):
-        if isinstance(msg, (ToolMessage, HumanMessage)):
-            start_removal = True
-        if start_removal and msg.id:
-            remove_messages.append(RemoveMessage(id=msg.id))
-    return {
-        "messages": remove_messages,
-    }
+        remove_messages = []
+        start_removal = False
+
+        for msg in reversed(state.messages[:nb_removal_candidates]):
+            if isinstance(msg, (ToolMessage, HumanMessage)):
+                start_removal = True
+            if start_removal and msg.id:
+                remove_messages.append(RemoveMessage(id=msg.id))
+            return state.sanitize_update(
+                ctx=self.ctx,
+                update={
+                    "messages": remove_messages,
+                },
+            )

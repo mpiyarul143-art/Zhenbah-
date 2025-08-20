@@ -7,18 +7,19 @@ from langgraph.constants import END, START
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode
-from mobile_use.agents.contextor.contextor import contextor_node
-from mobile_use.agents.cortex.cortex import cortex_node
-from mobile_use.agents.executor.executor import executor_node
+from mobile_use.agents.contextor.contextor import ContextorNode
+from mobile_use.agents.cortex.cortex import CortexNode
+from mobile_use.agents.executor.executor import ExecutorNode
 from mobile_use.agents.executor.executor_context_cleaner import executor_context_cleaner_node
-from mobile_use.agents.orchestrator.orchestrator import orchestrator_node
-from mobile_use.agents.planner.planner import planner_node
+from mobile_use.agents.orchestrator.orchestrator import OrchestratorNode
+from mobile_use.agents.planner.planner import PlannerNode
 from mobile_use.agents.planner.utils import (
     all_completed,
     get_current_subgoal,
     one_of_them_is_failure,
 )
-from mobile_use.agents.summarizer.summarizer import summarizer_node
+from mobile_use.agents.summarizer.summarizer import SummarizerNode
+from mobile_use.context import MobileUseContext
 from mobile_use.graph.state import State
 from mobile_use.tools.index import EXECUTOR_WRAPPERS_TOOLS, get_tools_from_wrappers
 from mobile_use.utils.logger import get_logger
@@ -85,23 +86,25 @@ def post_executor_tools_gate(
     return "done"
 
 
-async def get_graph() -> CompiledStateGraph:
+async def get_graph(ctx: MobileUseContext) -> CompiledStateGraph:
     graph_builder = StateGraph(State)
 
     ## Define nodes
-    graph_builder.add_node("planner", planner_node)
-    graph_builder.add_node("orchestrator", orchestrator_node)
+    graph_builder.add_node("planner", PlannerNode(ctx))
+    graph_builder.add_node("orchestrator", OrchestratorNode(ctx))
 
-    graph_builder.add_node("contextor", contextor_node)
+    graph_builder.add_node("contextor", ContextorNode(ctx))
 
-    graph_builder.add_node("cortex", cortex_node)
+    graph_builder.add_node("cortex", CortexNode(ctx))
 
-    graph_builder.add_node("executor", executor_node)
-    executor_tool_node = ToolNode(get_tools_from_wrappers(EXECUTOR_WRAPPERS_TOOLS))
+    graph_builder.add_node("executor", ExecutorNode(ctx))
+    executor_tool_node = ToolNode(
+        get_tools_from_wrappers(ctx=ctx, wrappers=EXECUTOR_WRAPPERS_TOOLS)
+    )
     graph_builder.add_node("executor_tools", executor_tool_node)
 
     graph_builder.add_node("executor_context_cleaner", executor_context_cleaner_node)
-    graph_builder.add_node("summarizer", summarizer_node)
+    graph_builder.add_node("summarizer", SummarizerNode(ctx))
 
     # Linking nodes
     graph_builder.add_edge(START, "planner")

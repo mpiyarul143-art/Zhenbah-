@@ -16,7 +16,10 @@ class ScreenApiClient:
         self.retry_count = retry_count
         self.retry_wait_seconds = retry_wait_seconds
 
-    def get(self, path: str, **kwargs):
+    def get_with_retry(self, path: str, **kwargs):
+        """
+        Make a GET request to the Screen API with retry logic based on the client configuration.
+        """
         for attempt in range(self.retry_count):
             try:
                 response = self.session.get(urljoin(self.base_url, path), **kwargs)

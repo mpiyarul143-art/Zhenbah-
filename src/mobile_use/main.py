@@ -1,9 +1,10 @@
 import asyncio
 import multiprocessing
-import os
 import platform
 import sys
 import time
+from adbutils import AdbClient
+import requests
 from pathlib import Path
 from typing import Optional
 
@@ -13,6 +14,11 @@ from rich.console import Console
 from typing_extensions import Annotated
 
 from mobile_use.agents.outputter.outputter import outputter
+from mobile_use.clients.device_hardware_client import DeviceHardwareClient
+from mobile_use.clients.screen_api_client import (
+    ScreenApiClient,
+    get_client as get_screen_api_client,
+)
 from mobile_use.config import (
     OutputConfig,
     initialize_llm_config,
@@ -23,7 +29,7 @@ from mobile_use.config import (
 from mobile_use.constants import (
     RECURSION_LIMIT,
 )
-from mobile_use.context import DeviceContext, set_execution_setup
+from mobile_use.context import DeviceContext, DevicePlatform, ExecutionSetup, MobileUseContext
 from mobile_use.controllers.mobile_command_controller import ScreenDataResponse, get_screen_data
 from mobile_use.controllers.platform_specific_commands_controller import get_first_device_id
 from mobile_use.graph.graph import get_graph
@@ -58,82 +64,37 @@ def print_ai_response_to_stderr(graph_result: State):
             return
 
 
-def check_device_screen_api_health_with_retry_logic(
-    base_url: Optional[str] = None,
-    max_consecutive_failures: int = 5,
-    delay_seconds: int = 1,
-) -> bool:
-    """
-    Check Device Screen API health with 5-strike failure detection and automatic server restart.
-    Returns True if healthy, False if failed after all retries.
-    """
-    import requests
-
-    base_url = base_url or f"http://localhost:{server_settings.DEVICE_SCREEN_API_PORT}"
-    health_url = f"{base_url}/health"
-    consecutive_failures = 0
-
+def check_device_screen_api_health_with_retry_logic(client: ScreenApiClient) -> bool:
     restart_screen_api = not settings.DEVICE_SCREEN_API_BASE_URL
     restart_hw_bridge = not settings.DEVICE_HARDWARE_BRIDGE_BASE_URL
 
-    while consecutive_failures < max_consecutive_failures:
-        try:
-            response = requests.get(health_url, timeout=3)
-            if response.status_code == 200:
-                logger.success(f"Device Screen API is healthy on {base_url}")
-                return True
-            elif response.status_code == 503:
-                consecutive_failures += 1
-                logger.warning(
-                    f"Health check failed with 503 "
-                    f"({consecutive_failures}/{max_consecutive_failures})"
-                )
-                if consecutive_failures >= max_consecutive_failures:
-                    logger.error(f"Failing {max_consecutive_failures} times, restarting servers")
-                    stop_servers(
-                        device_screen_api=restart_screen_api,
-                        device_hardware_bridge=restart_hw_bridge,
-                    )
-                    time.sleep(2)
-                    return False
-                time.sleep(delay_seconds)
-            else:
-                logger.warning(f"Health check returned unexpected status: {response.status_code}")
-                time.sleep(delay_seconds)
-        except requests.exceptions.RequestException as e:
-            consecutive_failures += 1
-            logger.warning(
-                f"Health check request failed "
-                f"({consecutive_failures}/{max_consecutive_failures}): {e}"
-            )
-            if consecutive_failures >= max_consecutive_failures:
-                logger.error(f"Failing {max_consecutive_failures} times, restarting servers")
-                stop_servers(
-                    device_screen_api=restart_screen_api, device_hardware_bridge=restart_hw_bridge
-                )
-                time.sleep(2)
-                return False
-            time.sleep(delay_seconds)
-
-    return False
+    try:
+        client.get_with_retry("/health", timeout=5)
+        return True
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Device Screen API health check failed: {e}")
+        stop_servers(
+            device_screen_api=restart_screen_api,
+            device_hardware_bridge=restart_hw_bridge,
+        )
+        return False
 
 
-def run_servers() -> tuple[str | None, bool]:
+def run_servers(device_id: str, screen_api_client: ScreenApiClient) -> bool:
     """
     Starts all required servers, waits for them to be ready,
     and returns the device ID if available.
     """
-    device_id = None
     api_process = None
 
     if not settings.DEVICE_HARDWARE_BRIDGE_BASE_URL:
-        bridge_instance = start_device_hardware_bridge()
+        bridge_instance = start_device_hardware_bridge(device_id)
         if not bridge_instance:
             logger.warning("Failed to start Device Hardware Bridge. Exiting.")
             logger.info(
                 "Note: Device Screen API requires Device Hardware Bridge to function properly."
             )
-            return (None, False)
+            return False
 
         logger.info("Waiting for Device Hardware Bridge to connect to a device...")
         while True:
@@ -142,7 +103,6 @@ def run_servers() -> tuple[str | None, bool]:
             output = status_info.get("output")
 
             if status == BridgeStatus.RUNNING.value:
-                device_id = bridge_instance.get_device_id()
                 logger.success(
                     f"Device Hardware Bridge is running. Connected to device: {device_id}"
                 )
@@ -158,7 +118,7 @@ def run_servers() -> tuple[str | None, bool]:
                 logger.error(
                     f"Device Hardware Bridge failed to connect. Status: {status} - Output: {output}"
                 )
-                return (None, False)
+                return False
 
             time.sleep(1)
 
@@ -166,19 +126,44 @@ def run_servers() -> tuple[str | None, bool]:
         api_process = start_device_screen_api(use_process=True)
         if not api_process or not isinstance(api_process, multiprocessing.Process):
             logger.error("Failed to start Device Screen API. Exiting.")
-            return (None, False)
+            return False
 
-    if not check_device_screen_api_health_with_retry_logic(
-        base_url=settings.DEVICE_SCREEN_API_BASE_URL,
-        max_consecutive_failures=int(os.getenv("MOBILE_USE_HEALTH_RETRIES", 5)),
-        delay_seconds=int(os.getenv("MOBILE_USE_HEALTH_DELAY", 1)),
-    ):
+    if not check_device_screen_api_health_with_retry_logic(client=screen_api_client):
         logger.error("Device Screen API health check failed after retries. Stopping...")
         if api_process:
             api_process.terminate()
-        return (None, False)
+        return False
 
-    return (device_id, True)
+    return True
+
+
+def get_mobile_use_context(
+    device_id: str,
+    screen_api_client: ScreenApiClient,
+    adb_client: Optional[AdbClient] = None,
+) -> MobileUseContext:
+    hw_bridge_client = DeviceHardwareClient(
+        base_url=server_settings.DEVICE_HARDWARE_BRIDGE_BASE_URL,
+    )
+
+    host_platform = platform.system()
+    screen_data: ScreenDataResponse = get_screen_data(screen_api_client)
+    device_context = DeviceContext(
+        host_platform="WINDOWS" if host_platform == "Windows" else "LINUX",
+        mobile_platform=DevicePlatform.ANDROID
+        if screen_data.platform == "ANDROID"
+        else DevicePlatform.IOS,
+        device_id=device_id,
+        device_width=screen_data.width,
+        device_height=screen_data.height,
+    )
+
+    return MobileUseContext(
+        device=device_context,
+        hw_bridge_client=hw_bridge_client,
+        screen_api_client=screen_api_client,
+        adb_client=adb_client,
+    )
 
 
 async def run_automation(
@@ -187,16 +172,24 @@ async def run_automation(
     traces_output_path_str: str = "traces",
     graph_config_callbacks: Optional[list] = [],
     output_config: Optional[OutputConfig] = None,
+    adb_client: Optional[AdbClient] = None,
 ):
     device_id: str | None = None
     events_output_path, results_output_path = prepare_output_files()
+
+    screen_api_client = get_screen_api_client(base_url=settings.DEVICE_SCREEN_API_BASE_URL)
 
     logger.info("⚙️ Starting Mobile-use servers...")
     max_restart_attempts = 3
     restart_attempt = 0
 
+    device_id = get_first_device_id()
+    if not device_id:
+        logger.error("❌ No device found. Exiting.")
+        return
+
     while restart_attempt < max_restart_attempts:
-        device_id, success = run_servers()
+        success = run_servers(device_id=device_id, screen_api_client=screen_api_client)
         if success:
             break
 
@@ -212,26 +205,14 @@ async def run_automation(
             )
             return
 
-    if not device_id:
-        device_id = get_first_device_id()
-
-    host_platform = platform.system()
-
     llm_config = initialize_llm_config()
     set_llm_config_context(LLMConfigContext(llm_config=llm_config))
     logger.info(str(llm_config))
 
-    screen_data: ScreenDataResponse = get_screen_data()
-
-    device_context_instance = DeviceContext(
-        host_platform="WINDOWS" if host_platform == "Windows" else "LINUX",
-        mobile_platform="ANDROID" if screen_data.platform == "ANDROID" else "IOS",
-        device_id=device_id,
-        device_width=screen_data.width,
-        device_height=screen_data.height,
+    context = get_mobile_use_context(
+        device_id=device_id, screen_api_client=screen_api_client, adb_client=adb_client
     )
-    device_context_instance.set()
-    logger.info(device_context_instance.to_str())
+    logger.info(context.device.to_str())
 
     start_time = time.time()
     trace_id: str | None = None
@@ -247,7 +228,7 @@ async def run_automation(
         traces_output_path.mkdir(parents=True, exist_ok=True)
         traces_temp_path.mkdir(parents=True, exist_ok=True)
         trace_id = test_name
-        set_execution_setup(trace_id)
+        context.execution_setup = ExecutionSetup(trace_id=trace_id)
 
     logger.info(f"Starting graph with goal: `{goal}`")
     if output_config and output_config.needs_structured_format():
@@ -273,7 +254,7 @@ async def run_automation(
     last_state: State | None = None
     try:
         logger.info(f"Invoking graph with input: {graph_input}")
-        async for chunk in (await get_graph()).astream(
+        async for chunk in (await get_graph(context)).astream(
             input=graph_input,
             config={
                 "recursion_limit": RECURSION_LIMIT,
@@ -376,11 +357,23 @@ def main(
     Run the Mobile-use agent to automate tasks on a mobile device.
     """
     console = Console()
-    display_device_status(console)
+    adb_client = AdbClient(
+        host=settings.ADB_HOST or "localhost",
+        port=settings.ADB_PORT or 5037,
+    )
+    display_device_status(console, adb_client=adb_client)
     output_config = None
     if output_description:
         output_config = OutputConfig(output_description=output_description, structured_output=None)
-    asyncio.run(run_automation(goal, test_name, traces_path, output_config=output_config))
+    asyncio.run(
+        run_automation(
+            goal=goal,
+            test_name=test_name,
+            traces_output_path_str=traces_path,
+            output_config=output_config,
+            adb_client=adb_client,
+        )
+    )
 
 
 def cli():

@@ -1,14 +1,17 @@
 import sys
 
-from mobile_use.clients.adb_client import adb
 from mobile_use.clients.ios_client import get_ios_devices
+from adbutils import AdbClient
 from rich.console import Console
+from typing import Optional
 
 
-def display_device_status(console: Console):
+def display_device_status(console: Console, adb_client: Optional[AdbClient] = None):
     """Checks for connected devices and displays the status."""
     console.print("\n[bold]📱 Device Status[/bold]")
-    devices = adb.device_list()
+    devices = None
+    if adb_client is not None:
+        devices = adb_client.device_list()
     if devices:
         console.print("✅ [bold green]Android device(s) connected:[/bold green]")
         for device in devices:
