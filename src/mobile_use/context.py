@@ -4,14 +4,16 @@ Context variables for global state management.
 Uses ContextVar to avoid prop drilling and maintain clean function signatures.
 """
 
-from pydantic import ConfigDict
-from typing import Optional
-from openai import BaseModel
-from typing_extensions import Literal
 from enum import Enum
+from typing import Optional
+
+from adbutils import AdbClient
+from openai import BaseModel
+from pydantic import ConfigDict
+from typing_extensions import Literal
+
 from mobile_use.clients.device_hardware_client import DeviceHardwareClient
 from mobile_use.clients.screen_api_client import ScreenApiClient
-from adbutils import AdbClient
 
 
 class DevicePlatform(str, Enum):
@@ -31,7 +33,7 @@ class DeviceContext(BaseModel):
     def to_str(self):
         return (
             f"Host platform: {self.host_platform}\n"
-            f"Mobile platform: {self.mobile_platform}\n"
+            f"Mobile platform: {self.mobile_platform.value}\n"
             f"Device ID: {self.device_id}\n"
             f"Device width: {self.device_width}\n"
             f"Device height: {self.device_height}\n"
