@@ -1,11 +1,6 @@
 from typing import TypeGuard
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
-from mobile_use.constants import FAST_NON_UI_TOOLS
-
-
-def is_fast_nonui_tool(tool_message: ToolMessage) -> bool:
-    return tool_message.name in FAST_NON_UI_TOOLS
 
 
 def is_ai_message(message: BaseMessage) -> TypeGuard[AIMessage]:

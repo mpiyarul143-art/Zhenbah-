@@ -15,7 +15,6 @@ def run_shell_command_on_host(command: str) -> str:
     except subprocess.CalledProcessError as e:
         # Log the error and stderr for better debugging
         error_message = (
-            f"Command '{command}' failed with exit code {e.returncode}.\n"
-            f"Stderr: {e.stderr.strip()}"
+            f"Command '{command}' failed with exit code {e.returncode}.\nStderr: {e.stderr.strip()}"
         )
         raise RuntimeError(error_message) from e

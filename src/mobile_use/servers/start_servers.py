@@ -58,11 +58,14 @@ def _start_device_screen_api_process() -> Optional[multiprocessing.Process]:
         return None
 
 
-def start_device_hardware_bridge() -> Optional[DeviceHardwareBridge]:
+def start_device_hardware_bridge(device_id: str) -> Optional[DeviceHardwareBridge]:
     logger.info("Starting Device Hardware Bridge...")
 
     try:
-        bridge = DeviceHardwareBridge()
+        bridge = DeviceHardwareBridge(
+            device_id=device_id,
+            adb_host=server_settings.ADB_HOST,
+        )
         success = bridge.start()
 
         if success:
@@ -101,6 +104,7 @@ class SupportedServers(str, Enum):
 
 @cli.command()
 def start(
+    device_id: Annotated[str, typer.Option("--device", help="Device ID")],
     only: Annotated[
         SupportedServers, typer.Option("--only", help="Start only one server")
     ] = SupportedServers.ALL,
@@ -118,13 +122,13 @@ def start(
 
     try:
         if only == SupportedServers.ALL:
-            hardware_bridge = start_device_hardware_bridge()
+            hardware_bridge = start_device_hardware_bridge(device_id)
             if hardware_bridge:
                 servers_to_stop["device_hardware_bridge"] = True
             start_device_screen_api(use_process=False)
 
         elif only == SupportedServers.DEVICE_HARDWARE_BRIDGE:
-            hardware_bridge = start_device_hardware_bridge()
+            hardware_bridge = start_device_hardware_bridge(device_id)
             if hardware_bridge:
                 servers_to_stop["device_hardware_bridge"] = True
                 hardware_bridge.wait()

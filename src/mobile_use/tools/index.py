@@ -1,3 +1,5 @@
+from langchain_core.tools import BaseTool
+from mobile_use.context import MobileUseContext
 from mobile_use.tools.mobile.back import back_wrapper
 from mobile_use.tools.mobile.copy_text_from import copy_text_from_wrapper
 from mobile_use.tools.mobile.erase_text import erase_text_wrapper
@@ -37,14 +39,14 @@ EXECUTOR_WRAPPERS_TOOLS = [
 ]
 
 
-def get_tools_from_wrappers(wrappers: list[ToolWrapper]):
+def get_tools_from_wrappers(ctx: MobileUseContext, wrappers: list[ToolWrapper]) -> list[BaseTool]:
     """Get the tools from the wrappers."""
-    return [wrapper.tool_fn for wrapper in wrappers]
+    return [wrapper.tool_fn_getter(ctx) for wrapper in wrappers]
 
 
 def get_tool_wrapper_from_name(name: str) -> ToolWrapper | None:
     """Get the tool wrapper from the name."""
     for wrapper in EXECUTOR_WRAPPERS_TOOLS:
-        if wrapper.tool_fn.__name__ == name:
+        if wrapper.tool_fn_getter.__name__ == f"get_{name}_tool":
             return wrapper
     return None

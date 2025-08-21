@@ -1,26 +1,14 @@
-from typing import Union
-
 from langchain_core.messages import AIMessage, AnyMessage
 from langgraph.graph import add_messages
 from langgraph.prebuilt.chat_agent_executor import AgentStatePydantic
 from typing_extensions import Annotated, Optional
 
 from mobile_use.agents.planner.types import Subgoal
-from mobile_use.context import is_execution_setup_set
 from mobile_use.utils.logger import get_logger
 from mobile_use.utils.recorder import record_interaction
+from mobile_use.context import MobileUseContext
 
 logger = get_logger(__name__)
-
-
-def add_agent_thought(a: list[str], b: Union[str, list[str]]) -> list[str]:
-    if is_execution_setup_set():
-        record_interaction(response=AIMessage(content=str(b)))
-    if isinstance(b, str):
-        return a + [b]
-    elif isinstance(b, list):
-        return a + b
-    raise TypeError("b must be a str or list[str]")
 
 
 def take_last(a, b):
@@ -59,5 +47,27 @@ class State(AgentStatePydantic):
     agents_thoughts: Annotated[
         list[str],
         "All thoughts and reasons that led to actions (why a tool was called, expected outcomes..)",
-        add_agent_thought,
     ]
+
+    def sanitize_update(self, ctx: MobileUseContext, update: dict):
+        """
+        Sanitizes the state update to ensure it is valid and apply side effect logic where required.
+        """
+        updated_agents_thoughts: Optional[str | list[str]] = update.get("agents_thoughts", None)
+        if updated_agents_thoughts is not None:
+            if isinstance(updated_agents_thoughts, str):
+                updated_agents_thoughts = [updated_agents_thoughts]
+            elif not isinstance(updated_agents_thoughts, list):
+                raise ValueError("agents_thoughts must be a str or list[str]")
+            update["agents_thoughts"] = _add_agent_thoughts(
+                ctx=ctx,
+                old=self.agents_thoughts,
+                new=updated_agents_thoughts,
+            )
+        return update
+
+
+def _add_agent_thoughts(ctx: MobileUseContext, old: list[str], new: list[str]) -> list[str]:
+    if ctx.execution_setup:
+        record_interaction(ctx, response=AIMessage(content=str(new)))
+    return old + new

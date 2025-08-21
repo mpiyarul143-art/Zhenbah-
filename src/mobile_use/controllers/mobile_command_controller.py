@@ -7,14 +7,12 @@ from langgraph.types import Command
 from pydantic import BaseModel, ConfigDict, Field
 from requests import JSONDecodeError
 
-from mobile_use.clients.device_hardware_client import get_client as get_device_hardware_client
-from mobile_use.clients.screen_api_client import get_client as get_screen_api_client
-from mobile_use.config import settings
+from mobile_use.clients.device_hardware_client import DeviceHardwareClient
+from mobile_use.clients.screen_api_client import ScreenApiClient
+from mobile_use.context import DeviceContext, DevicePlatform, MobileUseContext
 from mobile_use.utils.errors import ControllerErrors
 from mobile_use.utils.logger import get_logger
 
-screen_api = get_screen_api_client(settings.DEVICE_SCREEN_API_BASE_URL)
-device_hardware_api = get_device_hardware_client(settings.DEVICE_HARDWARE_BRIDGE_BASE_URL)
 logger = get_logger(__name__)
 
 
@@ -29,13 +27,13 @@ class ScreenDataResponse(BaseModel):
     platform: str
 
 
-def get_screen_data():
-    response = screen_api.get("/screen-info")
+def get_screen_data(screen_api_client: ScreenApiClient):
+    response = screen_api_client.get_with_retry("/screen-info")
     return ScreenDataResponse(**response.json())
 
 
-def take_screenshot():
-    return get_screen_data().base64
+def take_screenshot(ctx: MobileUseContext):
+    return get_screen_data(ctx.screen_api_client).base64
 
 
 class RunFlowRequest(BaseModel):
@@ -44,7 +42,7 @@ class RunFlowRequest(BaseModel):
     dry_run: bool = Field(default=False, alias="dryRun")
 
 
-def run_flow(flow_steps: list, dry_run: bool = False) -> Optional[dict]:
+def run_flow(ctx: MobileUseContext, flow_steps: list, dry_run: bool = False) -> Optional[dict]:
     """
     Run a flow i.e, a sequence of commands.
     Returns None on success, or the response body of the failed command.
@@ -54,7 +52,7 @@ def run_flow(flow_steps: list, dry_run: bool = False) -> Optional[dict]:
     for step in flow_steps:
         step_yml = yaml.dump(step)
         payload = RunFlowRequest(yaml=step_yml, dryRun=dry_run).model_dump(by_alias=True)
-        response = device_hardware_api.post("run-command", json=payload)
+        response = ctx.hw_bridge_client.post("run-command", json=payload)
 
         try:
             response_body = response.json()
@@ -147,7 +145,12 @@ SelectorRequest = Union[
 ]
 
 
-def tap(selector_request: SelectorRequest, dry_run: bool = False, index: Optional[int] = None):
+def tap(
+    ctx: MobileUseContext,
+    selector_request: SelectorRequest,
+    dry_run: bool = False,
+    index: Optional[int] = None,
+):
     """
     Tap on a selector.
     Index is optional and is used when you have multiple views matching the same selector.
@@ -160,11 +163,14 @@ def tap(selector_request: SelectorRequest, dry_run: bool = False, index: Optiona
     if index:
         tap_body["index"] = index
     flow_input = [{"tapOn": tap_body}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
 def long_press_on(
-    selector_request: SelectorRequest, dry_run: bool = False, index: Optional[int] = None
+    ctx: MobileUseContext,
+    selector_request: SelectorRequest,
+    dry_run: bool = False,
+    index: Optional[int] = None,
 ):
     long_press_on_body = selector_request.to_dict()
     if not long_press_on_body:
@@ -174,7 +180,7 @@ def long_press_on(
     if index:
         long_press_on_body["index"] = index
     flow_input = [{"longPressOn": long_press_on_body}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
 class SwipeStartEndCoordinatesRequest(BaseModel):
@@ -217,74 +223,74 @@ class SwipeRequest(BaseModel):
         return res
 
 
-def swipe(swipe_request: SwipeRequest, dry_run: bool = False):
+def swipe(ctx: MobileUseContext, swipe_request: SwipeRequest, dry_run: bool = False):
     swipe_body = swipe_request.to_dict()
     if not swipe_body:
         error = "Invalid swipe selector request, could not format yaml"
         logger.error(error)
         raise ControllerErrors(error)
     flow_input = [{"swipe": swipe_body}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
 ##### Text related commands #####
 
 
-def input_text(text: str, dry_run: bool = False):
-    return run_flow([{"inputText": text}], dry_run=dry_run)
+def input_text(ctx: MobileUseContext, text: str, dry_run: bool = False):
+    return run_flow(ctx, [{"inputText": text}], dry_run=dry_run)
 
 
-def copy_text_from(selector_request: SelectorRequest, dry_run: bool = False):
+def copy_text_from(ctx: MobileUseContext, selector_request: SelectorRequest, dry_run: bool = False):
     copy_text_from_body = selector_request.to_dict()
     if not copy_text_from_body:
         error = "Invalid copyTextFrom selector request, could not format yaml"
         logger.error(error)
         raise ControllerErrors(error)
     flow_input = [{"copyTextFrom": copy_text_from_body}]
-    return run_flow(flow_input, dry_run=dry_run)
+    return run_flow(ctx, flow_input, dry_run=dry_run)
 
 
-def paste_text(dry_run: bool = False):
-    return run_flow(["pasteText"], dry_run=dry_run)
+def paste_text(ctx: MobileUseContext, dry_run: bool = False):
+    return run_flow(ctx, ["pasteText"], dry_run=dry_run)
 
 
-def erase_text(nb_chars: Optional[int] = None, dry_run: bool = False):
+def erase_text(ctx: MobileUseContext, nb_chars: Optional[int] = None, dry_run: bool = False):
     """
     Removes characters from the currently selected textfield (if any)
     Removes 50 characters if nb_chars is not specified.
     """
     if nb_chars is None:
-        return run_flow(["eraseText"], dry_run=dry_run)
-    return run_flow([{"eraseText": nb_chars}], dry_run=dry_run)
+        return run_flow(ctx, ["eraseText"], dry_run=dry_run)
+    return run_flow(ctx, [{"eraseText": nb_chars}], dry_run=dry_run)
 
 
 ##### App related commands #####
 
 
-def launch_app(package_name: str, dry_run: bool = False):
+def launch_app(ctx: MobileUseContext, package_name: str, dry_run: bool = False):
     flow_input = [{"launchApp": package_name}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
-def stop_app(package_name: Optional[str] = None, dry_run: bool = False):
+def stop_app(ctx: MobileUseContext, package_name: Optional[str] = None, dry_run: bool = False):
     if package_name is None:
         flow_input = ["stopApp"]
     else:
         flow_input = [{"stopApp": package_name}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
-def open_link(url: str, dry_run: bool = False):
+def open_link(ctx: MobileUseContext, url: str, dry_run: bool = False):
     flow_input = [{"openLink": url}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
 ##### Key related commands #####
 
 
-def back(dry_run: bool = False):
+def back(ctx: MobileUseContext, dry_run: bool = False):
     flow_input = ["back"]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
 class Key(Enum):
@@ -293,9 +299,9 @@ class Key(Enum):
     BACK = "Back"
 
 
-def press_key(key: Key, dry_run: bool = False):
+def press_key(ctx: MobileUseContext, key: Key, dry_run: bool = False):
     flow_input = [{"pressKey": key.value}]
-    return run_flow_with_wait_for_animation_to_end(flow_input, dry_run=dry_run)
+    return run_flow_with_wait_for_animation_to_end(ctx, flow_input, dry_run=dry_run)
 
 
 #### Other commands ####
@@ -307,24 +313,39 @@ class WaitTimeout(Enum):
     LONG = 5000
 
 
-def wait_for_animation_to_end(timeout: Optional[WaitTimeout] = None, dry_run: bool = False):
+def wait_for_animation_to_end(
+    ctx: MobileUseContext, timeout: Optional[WaitTimeout] = None, dry_run: bool = False
+):
     if timeout is None:
-        return run_flow(["waitForAnimationToEnd"], dry_run=dry_run)
-    return run_flow([{"waitForAnimationToEnd": {"timeout": timeout.value}}], dry_run=dry_run)
+        return run_flow(ctx, ["waitForAnimationToEnd"], dry_run=dry_run)
+    return run_flow(ctx, [{"waitForAnimationToEnd": {"timeout": timeout.value}}], dry_run=dry_run)
 
 
-def run_flow_with_wait_for_animation_to_end(base_flow: list, dry_run: bool = False):
+def run_flow_with_wait_for_animation_to_end(
+    ctx: MobileUseContext, base_flow: list, dry_run: bool = False
+):
     base_flow.append({"waitForAnimationToEnd": {"timeout": WaitTimeout.MEDIUM.value}})
-    return run_flow(base_flow, dry_run=dry_run)
+    return run_flow(ctx, base_flow, dry_run=dry_run)
 
 
 if __name__ == "__main__":
     # long press, erase
     # input_text(text="test")
     # erase_text()
-    screen_data = get_screen_data()
+    ctx = MobileUseContext(
+        device=DeviceContext(
+            host_platform="LINUX",
+            mobile_platform=DevicePlatform.ANDROID,
+            device_id="emulator-5554",
+            device_width=1080,
+            device_height=1920,
+        ),
+        hw_bridge_client=DeviceHardwareClient("http://localhost:9999"),
+        screen_api_client=ScreenApiClient("http://localhost:9998"),
+    )
+    screen_data = get_screen_data(ctx.screen_api_client)
     from mobile_use.graph.state import State
-    from mobile_use.tools.mobile.erase_text import erase_text as erase_text_tool
+    from mobile_use.tools.mobile.erase_text import get_erase_text_tool
 
     dummy_state = State(
         latest_ui_hierarchy=screen_data.elements,
@@ -344,7 +365,7 @@ if __name__ == "__main__":
 
     # invoke erase_text tool
     input_resource_id = "com.google.android.settings.intelligence:id/open_search_view_edit_text"
-    command_output: Command = erase_text_tool.invoke(
+    command_output: Command = get_erase_text_tool(ctx=ctx).invoke(
         {
             "tool_call_id": uuid.uuid4().hex,
             "agent_thought": "",
