@@ -18,8 +18,12 @@ async def outputter(output_config: OutputConfig, graph_output: State) -> dict:
     logger.info("Starting Outputter Agent")
     last_message = graph_output.messages[-1] if graph_output.messages else None
 
-    system_message = Template(
-        Path(__file__).parent.joinpath("outputter.jinja").read_text(encoding="utf-8")
+    system_message = (
+        "You are a helpful assistant tasked with generating "
+        + "the final structured output of a multi-agent reasoning process."
+    )
+    human_message = Template(
+        Path(__file__).parent.joinpath("human.md").read_text(encoding="utf-8")
     ).render(
         initial_goal=graph_output.initial_goal,
         agents_thoughts=graph_output.agents_thoughts,
@@ -30,7 +34,10 @@ async def outputter(output_config: OutputConfig, graph_output: State) -> dict:
         else None,
     )
 
-    messages: list[BaseMessage] = [SystemMessage(content=system_message)]
+    messages: list[BaseMessage] = [
+        SystemMessage(content=system_message),
+        HumanMessage(content=human_message),
+    ]
 
     if output_config.output_description:
         messages.append(HumanMessage(content=output_config.output_description))

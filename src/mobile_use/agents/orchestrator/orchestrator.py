@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from jinja2 import Template
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from mobile_use.agents.orchestrator.types import OrchestratorOutput, OrchestratorStatus
 from mobile_use.agents.planner.utils import (
@@ -52,8 +52,10 @@ class OrchestratorNode:
 
         system_message = Template(
             Path(__file__).parent.joinpath("orchestrator.md").read_text(encoding="utf-8")
+        ).render(platform=self.ctx.device.mobile_platform.value)
+        human_message = Template(
+            Path(__file__).parent.joinpath("human.md").read_text(encoding="utf-8")
         ).render(
-            platform=self.ctx.device.mobile_platform.value,
             initial_goal=state.initial_goal,
             subgoal_plan="\n".join(str(s) for s in state.subgoal_plan),
             current_subgoal=str(current_subgoal),
@@ -61,6 +63,7 @@ class OrchestratorNode:
         )
         messages = [
             SystemMessage(content=system_message),
+            HumanMessage(content=human_message),
         ]
 
         llm = get_llm(agent_node="orchestrator", temperature=1)

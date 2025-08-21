@@ -3,6 +3,7 @@ from pathlib import Path
 from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.messages.ai import AIMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 from mobile_use.context import MobileUseContext
 from mobile_use.graph.state import State
 from mobile_use.services.llm import get_llm
@@ -60,11 +61,17 @@ class ExecutorNode:
             *state.executor_messages,
         ]
 
-        llm = get_llm(agent_node="executor").bind_tools(
-            tools=get_tools_from_wrappers(self.ctx, EXECUTOR_WRAPPERS_TOOLS),
-            tool_choice="auto",
-            parallel_tool_calls=False,
-        )
+        llm = get_llm(agent_node="executor")
+        llm_bind_tools_kwargs = {
+            "tools": get_tools_from_wrappers(self.ctx, EXECUTOR_WRAPPERS_TOOLS),
+            "tool_choice": "auto",  # automatically select a tool call or none
+        }
+
+        # ChatGoogleGenerativeAI does not support the "parallel_tool_calls" keyword
+        if not isinstance(llm, ChatGoogleGenerativeAI):
+            llm_bind_tools_kwargs["parallel_tool_calls"] = False
+
+        llm = llm.bind_tools(**llm_bind_tools_kwargs)
         response = await llm.ainvoke(messages)
 
         return state.sanitize_update(
