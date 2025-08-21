@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from jinja2 import Template
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from mobile_use.agents.planner.types import PlannerOutput, Subgoal, SubgoalStatus
 from mobile_use.agents.planner.utils import one_of_them_is_failure
 from mobile_use.context import MobileUseContext
@@ -27,8 +27,10 @@ class PlannerNode:
 
         system_message = Template(
             Path(__file__).parent.joinpath("planner.md").read_text(encoding="utf-8")
+        ).render(platform=self.ctx.device.mobile_platform.value)
+        human_message = Template(
+            Path(__file__).parent.joinpath("human.md").read_text(encoding="utf-8")
         ).render(
-            platform=self.ctx.device.mobile_platform.value,
             action="replan" if needs_replan else "plan",
             initial_goal=state.initial_goal,
             previous_plan="\n".join(str(s) for s in state.subgoal_plan),
@@ -36,6 +38,7 @@ class PlannerNode:
         )
         messages = [
             SystemMessage(content=system_message),
+            HumanMessage(content=human_message),
         ]
 
         llm = get_llm(agent_node="planner")
