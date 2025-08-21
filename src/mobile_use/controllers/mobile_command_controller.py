@@ -200,18 +200,16 @@ class SwipeStartEndPercentagesRequest(BaseModel):
     def to_dict(self):
         return {"start": self.start.to_str(), "end": self.end.to_str()}
 
+
 SwipeDirection = Annotated[
     Literal["UP", "DOWN", "LEFT", "RIGHT"],
-    BeforeValidator(lambda v: v.upper() if isinstance(v, str) else v)
+    BeforeValidator(lambda v: v.upper() if isinstance(v, str) else v),
 ]
+
 
 class SwipeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    swipe_mode: (
-        SwipeStartEndCoordinatesRequest
-        | SwipeStartEndPercentagesRequest
-        | SwipeDirection
-    )
+    swipe_mode: SwipeStartEndCoordinatesRequest | SwipeStartEndPercentagesRequest | SwipeDirection
     duration: Optional[int] = None  # in ms, default is 400ms
 
     def to_dict(self):

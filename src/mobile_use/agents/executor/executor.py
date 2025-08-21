@@ -64,7 +64,7 @@ class ExecutorNode:
         llm = get_llm(agent_node="executor")
         llm_bind_tools_kwargs = {
             "tools": get_tools_from_wrappers(self.ctx, EXECUTOR_WRAPPERS_TOOLS),
-            "tool_choice": "auto", # automatically select a tool call or none
+            "tool_choice": "auto",  # automatically select a tool call or none
         }
 
         # ChatGoogleGenerativeAI does not support the "parallel_tool_calls" keyword
