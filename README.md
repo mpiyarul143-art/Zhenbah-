@@ -1,5 +1,5 @@
 # mobile-use: automate your phone with natural language
-  
+
 <div align="center">
 
 ![mobile-use in Action](./doc/linkedin-demo-with-text.gif)
@@ -21,8 +21,6 @@
 Mobile-use is a powerful, open-source AI agent that controls your Android or IOS device using natural language. It understands your commands and interacts with the UI to perform tasks, from sending messages to navigating complex apps.
 
 > Mobile-use is quickly evolving. Your suggestions, ideas, and reported bugs will shape this project. Do not hesitate to join in the conversation on [Discord](https://discord.gg/6nSqmQ9pQs) or contribute directly, we will reply to everyone! ❤️
-
-
 
 ## ✨ Features
 
@@ -209,6 +207,14 @@ python ./src/mobile_use/main.py \
 ## ❤️ Contributing
 
 We love contributions! Whether you're fixing a bug, adding a feature, or improving documentation, your help is welcome. Please read our **[Contributing Guidelines](CONTRIBUTING.md)** to get started.
+
+## ⭐ Star History
+
+<p align="center">
+  <a href="https://star-history.com/#minitap-ai/mobile-use&Date">
+    <img src="https://api.star-history.com/svg?repos=minitap-ai/mobile-use&type=Date" alt="Star History Chart" />
+  </a>
+</p>
 
 ## 📜 License
 
