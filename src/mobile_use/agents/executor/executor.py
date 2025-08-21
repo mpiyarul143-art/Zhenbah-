@@ -49,7 +49,7 @@ class ExecutorNode:
 
         system_message = Template(
             Path(__file__).parent.joinpath("executor.md").read_text(encoding="utf-8")
-        ).render(platform=self.ctx.device.mobile_platform)
+        ).render(platform=self.ctx.device.mobile_platform.value)
         cortex_last_thought = (
             state.cortex_last_thought if state.cortex_last_thought else state.agents_thoughts[-1]
         )

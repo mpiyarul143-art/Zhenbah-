@@ -38,7 +38,7 @@ class CortexNode:
         system_message = Template(
             Path(__file__).parent.joinpath("cortex.md").read_text(encoding="utf-8")
         ).render(
-            platform=self.ctx.device.mobile_platform,
+            platform=self.ctx.device.mobile_platform.value,
             initial_goal=state.initial_goal,
             subgoal_plan=state.subgoal_plan,
             current_subgoal=get_current_subgoal(state.subgoal_plan),

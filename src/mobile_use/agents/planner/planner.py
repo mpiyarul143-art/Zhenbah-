@@ -28,7 +28,7 @@ class PlannerNode:
         system_message = Template(
             Path(__file__).parent.joinpath("planner.md").read_text(encoding="utf-8")
         ).render(
-            platform=self.ctx.device.mobile_platform,
+            platform=self.ctx.device.mobile_platform.value,
             action="replan" if needs_replan else "plan",
             initial_goal=state.initial_goal,
             previous_plan="\n".join(str(s) for s in state.subgoal_plan),

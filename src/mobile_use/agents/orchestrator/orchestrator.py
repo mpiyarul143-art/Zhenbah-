@@ -53,7 +53,7 @@ class OrchestratorNode:
         system_message = Template(
             Path(__file__).parent.joinpath("orchestrator.md").read_text(encoding="utf-8")
         ).render(
-            platform=self.ctx.device.mobile_platform,
+            platform=self.ctx.device.mobile_platform.value,
             initial_goal=state.initial_goal,
             subgoal_plan="\n".join(str(s) for s in state.subgoal_plan),
             current_subgoal=str(current_subgoal),
