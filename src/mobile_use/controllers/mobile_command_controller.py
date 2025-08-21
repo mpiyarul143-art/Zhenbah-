@@ -1,10 +1,10 @@
 import uuid
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Annotated, Literal, Optional, Union
 
 import yaml
 from langgraph.types import Command
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 from requests import JSONDecodeError
 
 from mobile_use.clients.device_hardware_client import DeviceHardwareClient
@@ -200,13 +200,17 @@ class SwipeStartEndPercentagesRequest(BaseModel):
     def to_dict(self):
         return {"start": self.start.to_str(), "end": self.end.to_str()}
 
+SwipeDirection = Annotated[
+    Literal["UP", "DOWN", "LEFT", "RIGHT"],
+    BeforeValidator(lambda v: v.upper() if isinstance(v, str) else v)
+]
 
 class SwipeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     swipe_mode: (
         SwipeStartEndCoordinatesRequest
         | SwipeStartEndPercentagesRequest
-        | Literal["UP", "DOWN", "LEFT", "RIGHT"]
+        | SwipeDirection
     )
     duration: Optional[int] = None  # in ms, default is 400ms
 
