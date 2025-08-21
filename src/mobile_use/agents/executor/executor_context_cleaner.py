@@ -18,7 +18,10 @@ async def executor_context_cleaner_node(state: State):
         "executor_retrigger": False,
     }
     if len(state.executor_messages) > 0 and isinstance(state.executor_messages[-1], AIMessage):
-        if len(state.executor_messages[-1].tool_calls) > 0:  # type: ignore
+        last_executor_message = state.executor_messages[-1]
+        if len(last_executor_message.tool_calls) > 0:
             # A previous tool call raised an uncaught exception -> sanitize the executor messages
-            update["executor_messages"] = [state.messages[-1]]
+            tool_error_message = state.messages[-1]
+            logger.error("Tool call failed with error: " + str(tool_error_message.content))
+            update["executor_messages"] = [tool_error_message]
     return update
