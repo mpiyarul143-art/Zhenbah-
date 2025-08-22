@@ -4,7 +4,7 @@ from typing import Awaitable, Callable, Optional, TypeVar
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from mobile_use.config import LLM, AgentNode, settings
-from mobile_use.llm_config_context import get_llm_config_context
+from mobile_use.context import MobileUseContext
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,7 @@ def get_grok_llm(model_name: str, temperature: float = 1) -> ChatOpenAI:
 
 
 def get_llm(
+    ctx: MobileUseContext,
     agent_node: Optional[AgentNode] = None,
     override_llm: Optional[LLM] = None,
     temperature: float = 1,
@@ -70,7 +71,7 @@ def get_llm(
     if not llm:
         if agent_node is None:
             raise ValueError("Agent node must be provided")
-        llm_config = get_llm_config_context().llm_config
+        llm_config = ctx.llm_config
         llm = llm_config[agent_node]
 
     if llm.provider == "openai":

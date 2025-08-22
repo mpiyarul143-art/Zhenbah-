@@ -32,6 +32,7 @@ def get_list_packages_tool(ctx: MobileUseContext):
 
         try:
             hopper_output: HopperOutput = await hopper(
+                ctx=ctx,
                 initial_goal=state.initial_goal,
                 messages=state.messages,
                 data=output,

@@ -66,7 +66,7 @@ class OrchestratorNode:
             HumanMessage(content=human_message),
         ]
 
-        llm = get_llm(agent_node="orchestrator", temperature=1)
+        llm = get_llm(ctx=self.ctx, agent_node="orchestrator", temperature=1)
         llm = llm.with_structured_output(OrchestratorOutput)
         response: OrchestratorOutput = await llm.ainvoke(messages)  # type: ignore
 

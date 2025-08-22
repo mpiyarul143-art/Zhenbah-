@@ -69,9 +69,11 @@ class CortexNode:
             ui_hierarchy_str = json.dumps(ui_hierarchy_dict, indent=2, ensure_ascii=False)
             messages.append(HumanMessage(content="Here is the UI hierarchy:\n" + ui_hierarchy_str))
 
-        llm = get_llm(agent_node="cortex", temperature=1).with_structured_output(CortexOutput)
+        llm = get_llm(ctx=self.ctx, agent_node="cortex", temperature=1).with_structured_output(
+            CortexOutput
+        )
         llm_fallback = get_llm(
-            override_llm=LLM(provider="openai", model="gpt-5")
+            ctx=self.ctx, override_llm=LLM(provider="openai", model="gpt-5")
         ).with_structured_output(CortexOutput)
         response: CortexOutput = await with_fallback(
             main_call=lambda: llm.ainvoke(messages),

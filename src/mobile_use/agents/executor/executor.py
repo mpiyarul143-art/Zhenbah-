@@ -61,7 +61,7 @@ class ExecutorNode:
             *state.executor_messages,
         ]
 
-        llm = get_llm(agent_node="executor")
+        llm = get_llm(ctx=self.ctx, agent_node="executor")
         llm_bind_tools_kwargs = {
             "tools": get_tools_from_wrappers(self.ctx, EXECUTOR_WRAPPERS_TOOLS),
             "tool_choice": "auto",  # automatically select a tool call or none
