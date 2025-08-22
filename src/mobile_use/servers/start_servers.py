@@ -8,6 +8,7 @@ from typing import Annotated, Optional
 
 import requests
 import typer
+from mobile_use.context import DevicePlatform
 from mobile_use.servers.config import server_settings
 from mobile_use.servers.device_hardware_bridge import DeviceHardwareBridge
 from mobile_use.servers.device_screen_api import start as _start_device_screen_api
@@ -58,12 +59,15 @@ def _start_device_screen_api_process() -> Optional[multiprocessing.Process]:
         return None
 
 
-def start_device_hardware_bridge(device_id: str) -> Optional[DeviceHardwareBridge]:
+def start_device_hardware_bridge(
+    device_id: str, platform: DevicePlatform
+) -> Optional[DeviceHardwareBridge]:
     logger.info("Starting Device Hardware Bridge...")
 
     try:
         bridge = DeviceHardwareBridge(
             device_id=device_id,
+            platform=platform,
             adb_host=server_settings.ADB_HOST,
         )
         success = bridge.start()
@@ -105,6 +109,7 @@ class SupportedServers(str, Enum):
 @cli.command()
 def start(
     device_id: Annotated[str, typer.Option("--device", help="Device ID")],
+    platform: Annotated[DevicePlatform, typer.Option("--platform", help="Device platform")],
     only: Annotated[
         SupportedServers, typer.Option("--only", help="Start only one server")
     ] = SupportedServers.ALL,
@@ -122,13 +127,13 @@ def start(
 
     try:
         if only == SupportedServers.ALL:
-            hardware_bridge = start_device_hardware_bridge(device_id)
+            hardware_bridge = start_device_hardware_bridge(device_id=device_id, platform=platform)
             if hardware_bridge:
                 servers_to_stop["device_hardware_bridge"] = True
             start_device_screen_api(use_process=False)
 
         elif only == SupportedServers.DEVICE_HARDWARE_BRIDGE:
-            hardware_bridge = start_device_hardware_bridge(device_id)
+            hardware_bridge = start_device_hardware_bridge(device_id=device_id, platform=platform)
             if hardware_bridge:
                 servers_to_stop["device_hardware_bridge"] = True
                 hardware_bridge.wait()

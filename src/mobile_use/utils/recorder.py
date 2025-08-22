@@ -25,9 +25,7 @@ def record_interaction(ctx: MobileUseContext, response: BaseMessage):
         logger.error(f"Error compressing screenshot: {e}")
         return "Could not record this interaction"
     timestamp = time.time()
-    folder = (
-        Path(__file__).parent.joinpath(f"../../traces/{ctx.execution_setup.trace_id}").resolve()
-    )
+    folder = ctx.execution_setup.traces_path.joinpath(ctx.execution_setup.trace_id).resolve()
     folder.mkdir(parents=True, exist_ok=True)
     try:
         with open(
@@ -47,11 +45,11 @@ def record_interaction(ctx: MobileUseContext, response: BaseMessage):
     return "Screenshot recorded successfully"
 
 
-def log_agent_thoughts(agents_thoughts: list[str], events_output_path: str | None):
+def log_agent_thoughts(agents_thoughts: list[str], output_path: Path | None):
     if len(agents_thoughts) > 0:
         last_agents_thoughts = agents_thoughts[-1]
         previous_last_agents_thoughts = agents_thoughts[-2] if len(agents_thoughts) > 1 else None
         if previous_last_agents_thoughts != last_agents_thoughts:
             logger.info(f"💭 {last_agents_thoughts}")
-            if events_output_path:
-                record_events(output_path=events_output_path, events=agents_thoughts)
+            if output_path:
+                record_events(output_path=output_path, events=agents_thoughts)
