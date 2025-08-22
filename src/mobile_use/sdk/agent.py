@@ -129,7 +129,10 @@ class Agent:
         return True
 
     def new_task(self, goal: str):
-        return TaskRequestBuilder[None](goal=goal)
+        return TaskRequestBuilder[None].from_common(
+            goal=goal,
+            common=self._config.task_request_defaults,
+        )
 
     @overload
     async def run_task(self, request: TaskRequest[None]) -> Optional[Union[str, dict]]: ...

@@ -147,6 +147,18 @@ class TaskRequestBuilder(TaskRequestCommonBuilder, Generic[TIn]):
         self._output_description = None
         self._output_format: Optional[type[TIn]] = None
 
+    @classmethod
+    def from_common(cls, goal: str, common: TaskRequestCommon):
+        res = cls(goal=goal)
+        res._verbose = common.verbose
+        res._max_steps = common.max_steps
+        res._timeout_seconds = common.timeout_seconds
+        res._record_trace = common.record_trace
+        res._trace_path = common.trace_path
+        res._llm_output_path = common.llm_output_path
+        res._thoughts_output_path = common.thoughts_output_path
+        return res
+
     def using_profile(self, profile: Union[str, AgentProfile]) -> "TaskRequestBuilder[TIn]":
         """
         Set the agent profile for executing the task.
