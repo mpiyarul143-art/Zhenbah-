@@ -39,7 +39,7 @@ from mobile_use.sdk.types.exceptions import (
     ServerStartupError,
     AgentNotInitializedError,
 )
-from mobile_use.sdk.types.task import Task, TaskRequest, TaskStatus
+from mobile_use.sdk.types.task import AgentProfile, Task, TaskRequest, TaskStatus
 from mobile_use.utils.media import (
     create_gif_from_trace_folder,
     create_steps_json_from_trace_folder,
@@ -135,12 +135,57 @@ class Agent:
         )
 
     @overload
-    async def run_task(self, request: TaskRequest[None]) -> Optional[Union[str, dict]]: ...
+    async def run_task(
+        self,
+        *,
+        goal: str,
+        output: Optional[type[TOutput]] = None,
+        profile: Optional[Union[str, AgentProfile]] = None,
+        name: Optional[str] = None,
+    ) -> Optional[TOutput]: ...
 
     @overload
-    async def run_task(self, request: TaskRequest[TOutput]) -> Optional[TOutput]: ...
+    async def run_task(
+        self,
+        *,
+        goal: str,
+        output: Optional[str] = None,
+        profile: Optional[Union[str, AgentProfile]] = None,
+        name: Optional[str] = None,
+    ) -> Optional[Union[str, dict]]: ...
 
-    async def run_task(self, request: TaskRequest[TOutput]) -> Optional[Union[str, dict, TOutput]]:
+    @overload
+    async def run_task(self, *, request: TaskRequest[None]) -> Optional[Union[str, dict]]: ...
+
+    @overload
+    async def run_task(self, *, request: TaskRequest[TOutput]) -> Optional[TOutput]: ...
+
+    async def run_task(
+        self,
+        *,
+        goal: Optional[str] = None,
+        output: Optional[Union[type[TOutput], str]] = None,
+        profile: Optional[Union[str, AgentProfile]] = None,
+        name: Optional[str] = None,
+        request: Optional[TaskRequest[TOutput]] = None,
+    ) -> Optional[Union[str, dict, TOutput]]:
+        if request is not None:
+            return await self._run_task(request)
+        if goal is None:
+            raise AgentTaskRequestError("Goal is required")
+        task_request = self.new_task(goal=goal)
+        if output is not None:
+            if isinstance(output, str):
+                task_request.with_output_description(description=output)
+            elif output is not NoneType:
+                task_request.with_output_format(output_format=output)
+        if profile is not None:
+            task_request.using_profile(profile=profile)
+        if name is not None:
+            task_request.with_name(name=name)
+        return await self._run_task(task_request.build())
+
+    async def _run_task(self, request: TaskRequest[TOutput]) -> Optional[Union[str, dict, TOutput]]:
         if not self._initialized:
             raise AgentNotInitializedError()
 
