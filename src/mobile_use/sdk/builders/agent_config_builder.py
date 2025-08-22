@@ -30,8 +30,10 @@ class AgentConfigBuilder:
         ...     .add_profile(AgentProfile(name="HighReasoning", llm_config=LLMConfig(...)))
         ...     .add_profile(AgentProfile(name="LowReasoning", llm_config=LLMConfig(...)))
         ...     .for_device(DevicePlatform.ANDROID, "device123")
-        ...     .with_default_task_config(TaskConfig(max_steps=30))
-        ...     .build(default_profile="HighReasoning"))
+        ...     .with_default_task_config(TaskRequestCommon(max_steps=30))
+        ...     .with_default_profile("HighReasoning")
+        ...     .build()
+        ... )
     """
 
     def __init__(self):

@@ -8,7 +8,7 @@ from mobile_use.sdk.types.task import AgentProfile, TaskRequestCommon
 
 class ApiBaseUrl(BaseModel):
     """
-    Defines a base URL.
+    Defines an API base URL.
     """
 
     scheme: Literal["http", "https"]
@@ -57,12 +57,12 @@ class AgentConfig(BaseModel):
     Mobile-use agent configuration.
 
     Attributes:
-        agent_profiles (dict[str, AgentProfile]): Map an agent profile name to its configuration.
-        task_config_defaults (TaskConfig): Default task request configuration.
-        default_profile (AgentProfile): default profile to use for tasks
-        device_id (Optional[str]): Specific device to target (if None, first available is used).
-        device_platform (Optional[DevicePlatform]): Platform of the device to target.
-        servers (ServerConfig): Custom server configurations.
+        agent_profiles: Map an agent profile name to its configuration.
+        task_config_defaults: Default task request configuration.
+        default_profile: default profile to use for tasks
+        device_id: Specific device to target (if None, first available is used).
+        device_platform: Platform of the device to target.
+        servers: Custom server configurations.
     """
 
     agent_profiles: Dict[str, AgentProfile]

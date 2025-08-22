@@ -22,10 +22,7 @@ class TaskRequestCommonBuilder(BaseModel):
     """
 
     def __init__(self):
-        """Initialize an empty TaskRequestCommonBuilder."""
-        self._verbose = False
         self._max_steps = RECURSION_LIMIT
-        self._timeout_seconds = 300
         self._record_trace = False
         self._trace_path = Path("mobile-use-traces")
         self._llm_output_path: Optional[Path] = None
@@ -39,16 +36,6 @@ class TaskRequestCommonBuilder(BaseModel):
             max_steps: Maximum number of steps
         """
         self._max_steps = max_steps
-        return self
-
-    def with_timeout(self, seconds: int) -> Self:
-        """
-        Set the timeout in seconds for the task.
-
-        Args:
-            seconds: Number of seconds before the task is cancelled
-        """
-        self._timeout_seconds = seconds
         return self
 
     def with_trace_recording(self, enabled: bool = True, path: Optional[str] = None) -> Self:
@@ -86,16 +73,6 @@ class TaskRequestCommonBuilder(BaseModel):
         self._thoughts_output_path = Path(path)
         return self
 
-    def with_verbose_logging(self, verbose: bool = True) -> Self:
-        """
-        Enable or disable verbose logging.
-
-        Args:
-            verbose: Whether to enable verbose logging
-        """
-        self._verbose = verbose
-        return self
-
     def build(self) -> TaskRequestCommon:
         """
         Build the TaskRequestCommon object.
@@ -107,9 +84,7 @@ class TaskRequestCommonBuilder(BaseModel):
             ValueError: If required fields are missing
         """
         return TaskRequestCommon(
-            verbose=self._verbose,
             max_steps=self._max_steps,
-            timeout_seconds=self._timeout_seconds,
             record_trace=self._record_trace,
             trace_path=self._trace_path,
             llm_output_path=self._llm_output_path,
@@ -125,14 +100,11 @@ class TaskRequestBuilder(TaskRequestCommonBuilder, Generic[TIn]):
     clear methods that make the configuration process intuitive and type-safe.
 
     Examples:
-        >>> builder = TaskRequestBuilder[None]()
+        >>> builder = TaskRequestBuilder[None](goal="Open Gmail and check unread emails")
         >>> task_request = (
-        ...     builder(
-        ...         goal="Open Gmail and check unread emails",
-        ...         default_profile=profile,
-        ...     )
+        ...     builder
         ...     .with_max_steps(30)
-        ...     .with_timeout(180)
+        ...     .using_profile("LowReasoning")
         ...     .with_output_description("A list of email subjects and senders")
         ...     .build()
         ... )
@@ -150,9 +122,7 @@ class TaskRequestBuilder(TaskRequestCommonBuilder, Generic[TIn]):
     @classmethod
     def from_common(cls, goal: str, common: TaskRequestCommon):
         res = cls(goal=goal)
-        res._verbose = common.verbose
         res._max_steps = common.max_steps
-        res._timeout_seconds = common.timeout_seconds
         res._record_trace = common.record_trace
         res._trace_path = common.trace_path
         res._llm_output_path = common.llm_output_path
@@ -239,9 +209,7 @@ class TaskRequestBuilder(TaskRequestCommonBuilder, Generic[TIn]):
             task_name=self._name,
             output_description=self._output_description,
             output_format=self._output_format,
-            verbose=self._verbose,
             max_steps=self._max_steps,
-            timeout_seconds=self._timeout_seconds,
             record_trace=self._record_trace,
             trace_path=self._trace_path,
             llm_output_path=self._llm_output_path,

@@ -18,8 +18,8 @@ class AgentProfile(BaseModel):
     Represents a mobile-use agent profile.
 
     Attributes:
-        name (str): Name of the agent - used to reference the agent when running tasks.
-        llm_config (LLMConfig): LLM configuration for the agent.
+        name: Name of the agent - used to reference the agent when running tasks.
+        llm_config: LLM configuration for the agent.
     """
 
     name: str
@@ -48,9 +48,7 @@ class TaskRequestCommon(BaseModel):
     Defines common parameters of a mobile automation task request.
     """
 
-    verbose: bool = False
     max_steps: int = RECURSION_LIMIT
-    timeout_seconds: int = 300
     record_trace: bool = False
     trace_path: Path = Path("mobile-use-traces")
     llm_output_path: Optional[Path] = None
@@ -67,9 +65,7 @@ class TaskRequest(TaskRequestCommon, Generic[TOutput]):
         task_name: Optional name for the task
         output_description: Optional natural language description of expected output format
         output_format: Optional pydantic model for the output format of the task
-        verbose: Whether to enable verbose logging (default: False)
         max_steps: Maximum number of steps the agent can take (default: 20)
-        timeout_seconds: Maximum seconds before task is cancelled (default: 300)
         record_trace: Whether to record a trace (screenshots, actions) of the execution
                       (default: False)
         trace_path: Directory path to save trace data if recording is enabled
@@ -86,7 +82,7 @@ class TaskRequest(TaskRequestCommon, Generic[TOutput]):
 
 class TaskResult(BaseModel):
     """
-    Result of a completed mobile automation task.
+    Result of a mobile automation task.
 
     Attributes:
         content: Raw result content (could be text or structured data)
