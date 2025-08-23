@@ -4,7 +4,7 @@ from typing import Dict, Type, Union
 
 from jinja2 import Template
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
-from mobile_use.config import LLM, OutputConfig
+from mobile_use.config import OutputConfig
 from mobile_use.context import MobileUseContext
 from mobile_use.graph.state import State
 from mobile_use.services.llm import get_llm
@@ -45,7 +45,7 @@ async def outputter(
     if output_config.output_description:
         messages.append(HumanMessage(content=output_config.output_description))
 
-    llm = get_llm(ctx=ctx, override_llm=LLM(provider="openai", model="gpt-5-nano"), temperature=1)
+    llm = get_llm(ctx=ctx, name="outputter", is_utils=True, temperature=1)
     structured_llm = llm
 
     if output_config.structured_output:

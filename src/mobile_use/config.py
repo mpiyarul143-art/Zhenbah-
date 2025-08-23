@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Annotated, Any, Literal, Optional, Union, cast
+from typing import Annotated, Any, Literal, Optional, Union
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, SecretStr, ValidationError, model_validator
@@ -87,7 +87,9 @@ def record_events(output_path: Path | None, events: Union[list[str], BaseModel, 
 ### LLM Configuration
 
 LLMProvider = Literal["openai", "google", "openrouter", "xai"]
+LLMUtilsNode = Literal["outputter", "hopper"]
 AgentNode = Literal["planner", "orchestrator", "cortex", "executor"]
+AgentNodeWithFallback = Literal["cortex"]
 
 ROOT_DIR = Path(__file__).parent.parent.parent
 DEFAULT_LLM_CONFIG_FILENAME = "llm-config.defaults.jsonc"
@@ -98,15 +100,51 @@ class LLM(BaseModel):
     provider: LLMProvider
     model: str
 
+    def validate_provider(self, name: str):
+        match self.provider:
+            case "openai":
+                if not settings.OPENAI_API_KEY:
+                    raise Exception(f"{name} requires OPENAI_API_KEY in .env")
+            case "google":
+                if not settings.GOOGLE_API_KEY:
+                    raise Exception(f"{name} requires GOOGLE_API_KEY in .env")
+            case "openrouter":
+                if not settings.OPEN_ROUTER_API_KEY:
+                    raise Exception(f"{name} requires OPEN_ROUTER_API_KEY in .env")
+            case "xai":
+                if not settings.XAI_API_KEY:
+                    raise Exception(f"{name} requires XAI_API_KEY in .env")
+
     def __str__(self):
         return f"{self.provider}/{self.model}"
+
+
+class LLMWithFallback(LLM):
+    fallback: LLM
+
+    def __str__(self):
+        return f"{self.provider}/{self.model} (fallback: {self.fallback})"
+
+
+class LLMConfigUtils(BaseModel):
+    outputter: LLM
+    hopper: LLM
 
 
 class LLMConfig(BaseModel):
     planner: LLM
     orchestrator: LLM
-    cortex: LLM
+    cortex: LLMWithFallback
     executor: LLM
+    utils: LLMConfigUtils
+
+    def validate_providers(self):
+        self.planner.validate_provider("Planner")
+        self.orchestrator.validate_provider("Orchestrator")
+        self.cortex.validate_provider("Cortex")
+        self.executor.validate_provider("Executor")
+        self.utils.outputter.validate_provider("Outputter")
+        self.utils.hopper.validate_provider("Hopper")
 
     def __str__(self):
         return f"""
@@ -114,10 +152,16 @@ class LLMConfig(BaseModel):
 🎯 Orchestrator: {self.orchestrator}
 🧠 Cortex: {self.cortex}
 🛠️ Executor: {self.executor}
+🧩 Utils:
+    🔽 Hopper: {self.utils.hopper}
+    📝 Outputter: {self.utils.outputter}
 """
 
-    def __getitem__(self, item: AgentNode) -> LLM:
+    def get_agent(self, item: AgentNode) -> LLM:
         return getattr(self, item)
+
+    def get_utils(self, item: LLMUtilsNode) -> LLM:
+        return getattr(self.utils, item)
 
 
 def get_default_llm_config() -> LLMConfig:
@@ -132,22 +176,29 @@ def get_default_llm_config() -> LLMConfig:
         return LLMConfig(
             planner=LLM(provider="openai", model="gpt-4.1"),
             orchestrator=LLM(provider="openai", model="gpt-4.1"),
-            cortex=LLM(provider="openai", model="o3"),
+            cortex=LLMWithFallback(
+                provider="openai",
+                model="o3",
+                fallback=LLM(provider="openai", model="gpt-5"),
+            ),
             executor=LLM(provider="openai", model="gpt-4.1"),
+            utils=LLMConfigUtils(
+                outputter=LLM(provider="openai", model="gpt-5-nano"),
+                hopper=LLM(provider="openai", model="gpt-4.1"),
+            ),
         )
 
 
 def deep_merge_llm_config(default: LLMConfig, override: dict) -> LLMConfig:
+    def _deep_merge_dict(base: dict, extra: dict):
+        for key, value in extra.items():
+            if isinstance(value, dict):
+                _deep_merge_dict(base[key], value)
+            else:
+                base[key] = value
+
     merged_dict = default.model_dump()
-
-    for key, override_subdict in override.items():
-        if key in merged_dict and isinstance(override_subdict, dict):
-            for sub_key, sub_value in override_subdict.items():
-                if sub_value:
-                    merged_dict[key][sub_key] = sub_value
-        elif override_subdict:
-            merged_dict[key] = override_subdict
-
+    _deep_merge_dict(merged_dict, override)
     return LLMConfig.model_validate(merged_dict)
 
 
@@ -172,29 +223,9 @@ def parse_llm_config() -> LLMConfig:
         return get_default_llm_config()
 
 
-def validate_llm_config(llm_config: LLMConfig):
-    for agent_node, agent_llm in vars(llm_config).items():
-        agent_node = cast(AgentNode, agent_node)
-        agent_llm = cast(LLM, agent_llm)
-
-        match agent_llm.provider:
-            case "openai":
-                if not settings.OPENAI_API_KEY:
-                    raise Exception(f"{agent_node} requires OPENAI_API_KEY in .env")
-            case "google":
-                if not settings.GOOGLE_API_KEY:
-                    raise Exception(f"{agent_node} requires GOOGLE_API_KEY in .env")
-            case "openrouter":
-                if not settings.OPEN_ROUTER_API_KEY:
-                    raise Exception(f"{agent_node} requires OPEN_ROUTER_API_KEY in .env")
-            case "xai":
-                if not settings.XAI_API_KEY:
-                    raise Exception(f"{agent_node} requires XAI_API_KEY in .env")
-
-
 def initialize_llm_config() -> LLMConfig:
     llm_config = parse_llm_config()
-    validate_llm_config(llm_config)
+    llm_config.validate_providers()
     logger.success("LLM config initialized")
     return llm_config
 

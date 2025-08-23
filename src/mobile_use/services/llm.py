@@ -1,9 +1,16 @@
 import logging
-from typing import Awaitable, Callable, Optional, TypeVar
+from typing import Awaitable, Callable, Literal, TypeVar
+from typing_extensions import overload
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
-from mobile_use.config import LLM, AgentNode, settings
+from mobile_use.config import (
+    AgentNode,
+    AgentNodeWithFallback,
+    LLMUtilsNode,
+    LLMWithFallback,
+    settings,
+)
 from mobile_use.context import MobileUseContext
 
 logger = logging.getLogger(__name__)
@@ -59,21 +66,52 @@ def get_grok_llm(model_name: str, temperature: float = 1) -> ChatOpenAI:
     return client
 
 
+@overload
 def get_llm(
     ctx: MobileUseContext,
-    agent_node: Optional[AgentNode] = None,
-    override_llm: Optional[LLM] = None,
+    name: AgentNodeWithFallback,
+    *,
+    use_fallback: bool = False,
+    temperature: float = 1,
+): ...
+
+
+@overload
+def get_llm(
+    ctx: MobileUseContext,
+    name: AgentNode,
+    *,
+    temperature: float = 1,
+): ...
+
+
+@overload
+def get_llm(
+    ctx: MobileUseContext,
+    name: LLMUtilsNode,
+    *,
+    is_utils: Literal[True],
+    temperature: float = 1,
+): ...
+
+
+def get_llm(
+    ctx: MobileUseContext,
+    name: AgentNode | LLMUtilsNode | AgentNodeWithFallback,
+    is_utils: bool = False,
+    use_fallback: bool = False,
     temperature: float = 1,
 ):
-    if agent_node is None and override_llm is None:
-        raise ValueError("Either agent_node or override_llm must be provided")
-    llm: LLM | None = override_llm
-    if not llm:
-        if agent_node is None:
-            raise ValueError("Agent node must be provided")
-        llm_config = ctx.llm_config
-        llm = llm_config[agent_node]
-
+    llm = (
+        ctx.llm_config.get_utils(name)  # type: ignore
+        if is_utils
+        else ctx.llm_config.get_agent(name)  # type: ignore
+    )
+    if use_fallback:
+        if isinstance(llm, LLMWithFallback):
+            llm = llm.fallback
+        else:
+            raise ValueError("LLM has no fallback!")
     if llm.provider == "openai":
         return get_openai_llm(llm.model, temperature)
     elif llm.provider == "google":

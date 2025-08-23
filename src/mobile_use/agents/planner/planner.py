@@ -41,7 +41,7 @@ class PlannerNode:
             HumanMessage(content=human_message),
         ]
 
-        llm = get_llm(ctx=self.ctx, agent_node="planner")
+        llm = get_llm(ctx=self.ctx, name="planner")
         llm = llm.with_structured_output(PlannerOutput)
         response: PlannerOutput = await llm.ainvoke(messages)  # type: ignore
 
