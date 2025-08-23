@@ -5,12 +5,13 @@ Task-related type definitions for the Mobile-use SDK.
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Generic, Optional, Type, TypeVar
+from typing import Any, Generic, Optional, Type, TypeVar, overload
 from pydantic import BaseModel, Field
 
 from mobile_use.config import LLMConfig, get_default_llm_config
 from mobile_use.constants import RECURSION_LIMIT
 from mobile_use.context import DeviceContext
+from mobile_use.sdk.utils import load_llm_config_override
 
 
 class AgentProfile(BaseModel):
@@ -24,6 +25,29 @@ class AgentProfile(BaseModel):
 
     name: str
     llm_config: LLMConfig = Field(default_factory=get_default_llm_config)
+
+    @overload
+    def __init__(self, *, name: str, llm_config: LLMConfig): ...
+
+    @overload
+    def __init__(self, *, name: str, from_file: str): ...
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        llm_config: Optional[LLMConfig] = None,
+        from_file: Optional[str] = None,
+        **kwargs,
+    ):
+        kwargs["name"] = name
+        if from_file:
+            kwargs["llm_config"] = load_llm_config_override(Path(from_file))
+        elif llm_config:
+            kwargs["llm_config"] = llm_config
+        else:
+            raise ValueError("Either llm_config or from_file must be provided")
+        super().__init__(**kwargs)
 
     def __str__(self):
         return f"Profile {self.name}:\n{self.llm_config}"

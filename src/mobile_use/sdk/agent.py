@@ -159,7 +159,7 @@ class Agent:
         self,
         *,
         goal: str,
-        output = None,
+        output=None,
         profile: Optional[Union[str, AgentProfile]] = None,
         name: Optional[str] = None,
     ) -> Optional[str]: ...
