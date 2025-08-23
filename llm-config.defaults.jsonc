@@ -11,11 +11,26 @@
     },
     "cortex": {
       "provider": "openai",
-      "model": "gpt-5"
+      "model": "gpt-5",
+      "fallback": {
+        "provider": "openai",
+        "model": "gpt-5"
+      }
     },
     "executor": {
       "provider": "openai",
       "model": "gpt-5-nano"
+    },
+    "utils": {
+      "hopper": {
+        // Needs at least a 256k context window.
+        "provider": "openai",
+        "model": "gpt-5-nano"
+      },
+      "outputter": {
+        "provider": "openai",
+        "model": "gpt-5-nano"
+      }
     }
   },
   // This is the config we recommend.
@@ -36,6 +51,17 @@
     "executor": {
       "provider": "openai",
       "model": "gpt-5-nano"
+    },
+    "utils": {
+      "hopper": {
+        // Needs at least a 256k context window.
+        "provider": "openai",
+        "model": "gpt-4.1"
+      },
+      "outputter": {
+        "provider": "openai",
+        "model": "gpt-5-nano"
+      }
     }
   }
 }

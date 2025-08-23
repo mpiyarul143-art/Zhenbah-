@@ -46,7 +46,7 @@ The official leaderboard is available [here](https://docs.google.com/spreadsheet
 Ready to automate your mobile experience? Follow these steps to get mobile-use up and running.
 
 1.  **Set up Environment Variables:**
-    Copy the example `.env.example` file to `.env` and add your API keys. At least an OpenAI key is required.
+    Copy the example `.env.example` file to `.env` and add your API keys.
 
     ```bash
     cp .env.example .env
