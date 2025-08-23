@@ -162,3 +162,6 @@ class Task(BaseModel):
             execution_time_seconds=duration.total_seconds(),
             steps_taken=steps_taken,
         )
+
+    def get_name(self) -> str:
+        return self.request.task_name or self.id

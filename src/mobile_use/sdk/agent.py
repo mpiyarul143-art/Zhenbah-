@@ -139,7 +139,7 @@ class Agent:
         self,
         *,
         goal: str,
-        output: Optional[type[TOutput]] = None,
+        output: type[TOutput],
         profile: Optional[Union[str, AgentProfile]] = None,
         name: Optional[str] = None,
     ) -> Optional[TOutput]: ...
@@ -149,10 +149,20 @@ class Agent:
         self,
         *,
         goal: str,
-        output: Optional[str] = None,
+        output: str,
         profile: Optional[Union[str, AgentProfile]] = None,
         name: Optional[str] = None,
     ) -> Optional[Union[str, dict]]: ...
+
+    @overload
+    async def run_task(
+        self,
+        *,
+        goal: str,
+        output = None,
+        profile: Optional[Union[str, AgentProfile]] = None,
+        name: Optional[str] = None,
+    ) -> Optional[str]: ...
 
     @overload
     async def run_task(self, *, request: TaskRequest[None]) -> Optional[Union[str, dict]]: ...
@@ -205,6 +215,7 @@ class Agent:
             created_at=datetime.now(),
         )
         self._tasks.append(task)
+        task_name = task.get_name()
 
         context = MobileUseContext(
             device=self._device_context,
@@ -225,7 +236,7 @@ class Agent:
             )
             logger.info(str(output_config))
 
-        logger.info(f"Starting graph with goal: `{request.goal}`")
+        logger.info(f"[{task_name}] Starting graph with goal: `{request.goal}`")
         state = self._get_graph_state(task=task)
         graph_input = state.model_dump()
 
@@ -233,7 +244,7 @@ class Agent:
         last_state_snapshot: dict | None = None
         output = None
         try:
-            logger.info(f"Invoking graph with input: {graph_input}")
+            logger.info(f"[{task_name}] Invoking graph with input: {graph_input}")
             task.status = TaskStatus.RUNNING
             async for chunk in (await get_graph(context)).astream(
                 input=graph_input,
@@ -251,27 +262,28 @@ class Agent:
                         output_path=task.request.thoughts_output_path,
                     )
             if not last_state:
-                err = "No result received from graph"
+                err = f"[{task_name}] No result received from graph"
                 logger.warning(err)
                 task.finalize(content=output, state=last_state_snapshot, error=err)
                 return None
 
             print_ai_response_to_stderr(graph_result=last_state)
             output = await self._extract_output(
+                task_name=task_name,
                 ctx=context,
                 request=request,
                 output_config=output_config,
                 state=last_state,
             )
-            logger.info("✅ Automation is success ✅")
+            logger.info(f"✅ Automation '{task_name}' is success ✅")
             task.finalize(content=output, state=last_state_snapshot)
         except asyncio.CancelledError:
-            err = "Task cancelled"
+            err = f"[{task_name}] Task cancelled"
             logger.warning(err)
             task.finalize(content=output, state=last_state_snapshot, error=err, cancelled=True)
             raise
         except Exception as e:
-            err = f"Error running automation: {e}"
+            err = f"[{task_name}] Error running automation: {e}"
             logger.error(err)
             task.finalize(content=output, state=last_state_snapshot, error=err)
             raise
@@ -296,11 +308,11 @@ class Agent:
     def _prepare_tracing(self, task: Task, context: MobileUseContext):
         if not task.request.record_trace:
             return
-        task_name = task.request.task_name or task.id
+        task_name = task.get_name()
         temp_trace_path = Path(self._tmp_traces_dir / task_name).resolve()
         traces_output_path = Path(task.request.trace_path).resolve()
-        logger.info(f"📂 Traces output path: {traces_output_path}")
-        logger.info(f"📄📂 Traces temp path: {temp_trace_path}")
+        logger.info(f"[{task_name}] 📂 Traces output path: {traces_output_path}")
+        logger.info(f"[{task_name}] 📄📂 Traces temp path: {temp_trace_path}")
         traces_output_path.mkdir(parents=True, exist_ok=True)
         temp_trace_path.mkdir(parents=True, exist_ok=True)
         context.execution_setup = ExecutionSetup(
@@ -312,6 +324,7 @@ class Agent:
         if not exec_setup_ctx:
             return
 
+        task_name = task.get_name()
         status = "_PASS" if task.status == TaskStatus.COMPLETED else "_FAIL"
         ts = task.created_at.strftime("%Y-%m-%dT%H-%M-%S")
         new_name = f"{exec_setup_ctx.trace_id}{status}_{ts}"
@@ -319,17 +332,17 @@ class Agent:
         temp_trace_path = (self._tmp_traces_dir / exec_setup_ctx.trace_id).resolve()
         traces_output_path = Path(task.request.trace_path).resolve()
 
-        logger.info("Compiling trace FROM FOLDER: " + str(temp_trace_path))
+        logger.info(f"[{task_name}] Compiling trace FROM FOLDER: " + str(temp_trace_path))
         create_gif_from_trace_folder(temp_trace_path)
         create_steps_json_from_trace_folder(temp_trace_path)
 
-        logger.info("Video created, removing dust...")
+        logger.info(f"[{task_name}] Video created, removing dust...")
         remove_images_from_trace_folder(temp_trace_path)
         remove_steps_json_from_trace_folder(temp_trace_path)
-        logger.info("📽️ Trace compiled, moving to output path 📽️")
+        logger.info(f"[{task_name}] 📽️ Trace compiled, moving to output path 📽️")
 
         output_folder_path = temp_trace_path.rename(traces_output_path / new_name).resolve()
-        logger.info(f"📂✅ Traces located in: {output_folder_path}")
+        logger.info(f"[{task_name}] 📂✅ Traces located in: {output_folder_path}")
 
     def _prepare_output_files(self, task: Task):
         if task.request.llm_output_path:
@@ -339,26 +352,27 @@ class Agent:
 
     async def _extract_output(
         self,
+        task_name: str,
         ctx: MobileUseContext,
         request: TaskRequest[TOutput],
         output_config: Optional[OutputConfig],
         state: State,
     ) -> Optional[Union[str, dict, TOutput]]:
         if output_config and output_config.needs_structured_format():
-            logger.info("Generating structured output...")
+            logger.info(f"[{task_name}] Generating structured output...")
             try:
                 structured_output = await outputter(
                     ctx=ctx,
                     output_config=output_config,
                     graph_output=state,
                 )
-                logger.info(f"Structured output: {structured_output}")
+                logger.info(f"[{task_name}] Structured output: {structured_output}")
                 record_events(output_path=request.llm_output_path, events=structured_output)
                 if request.output_format is not None and request.output_format is not NoneType:
                     return request.output_format.model_validate(structured_output)
                 return structured_output
             except Exception as e:
-                logger.error(f"Failed to generate structured output: {e}")
+                logger.error(f"[{task_name}] Failed to generate structured output: {e}")
                 return None
         if state and state.agents_thoughts:
             last_msg = state.agents_thoughts[-1]
