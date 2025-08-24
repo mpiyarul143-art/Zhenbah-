@@ -32,7 +32,7 @@ Mobile-use is a powerful, open-source AI agent that controls your Android or IOS
 ## Benchmarks
 
 <p align="center">
-  <img src="./doc/benchmark.png" alt="Project banner" />
+  <img src="./doc/benchmark.jpg" alt="Project banner" />
 </p>
 
 We are global number 1 Opensource pass@1 on the AndroidWorld benchmark.
