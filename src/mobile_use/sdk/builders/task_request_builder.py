@@ -3,7 +3,7 @@ Builder for TaskRequest objects using a fluent interface.
 """
 
 from pathlib import Path
-from typing import Generic, Optional, Self, TypeVar, Union, cast
+from typing import Generic, Optional, Self, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -114,7 +114,7 @@ class TaskRequestBuilder(TaskRequestCommonBuilder, Generic[TIn]):
         """Initialize an empty TaskRequestBuilder."""
         super().__init__()
         self._goal = goal
-        self._profile: Optional[Union[str, AgentProfile]] = None
+        self._profile: Optional[str | AgentProfile] = None
         self._name: Optional[str] = None
         self._output_description = None
         self._output_format: Optional[type[TIn]] = None
@@ -129,7 +129,7 @@ class TaskRequestBuilder(TaskRequestCommonBuilder, Generic[TIn]):
         res._thoughts_output_path = common.thoughts_output_path
         return res
 
-    def using_profile(self, profile: Union[str, AgentProfile]) -> "TaskRequestBuilder[TIn]":
+    def using_profile(self, profile: str | AgentProfile) -> "TaskRequestBuilder[TIn]":
         """
         Set the agent profile for executing the task.
 

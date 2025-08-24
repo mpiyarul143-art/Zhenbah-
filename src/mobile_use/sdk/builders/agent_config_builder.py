@@ -2,7 +2,7 @@
 Builder for AgentConfig objects using a fluent interface.
 """
 
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List
 import copy
 
 from mobile_use.config import get_default_llm_config
@@ -40,7 +40,7 @@ class AgentConfigBuilder:
         """Initialize an empty AgentConfigBuilder."""
         self._agent_profiles: Dict[str, AgentProfile] = {}
         self._task_request_defaults: Optional[TaskRequestCommon] = None
-        self._default_profile: Optional[Union[str, AgentProfile]] = None
+        self._default_profile: Optional[str | AgentProfile] = None
         self._device_id: Optional[str] = None
         self._device_platform: Optional[DevicePlatform] = None
         self._servers: ServerConfig = get_default_servers()
@@ -66,7 +66,7 @@ class AgentConfigBuilder:
             self.add_profile(profile=profile)
         return self
 
-    def with_default_profile(self, profile: Union[str, AgentProfile]) -> "AgentConfigBuilder":
+    def with_default_profile(self, profile: str | AgentProfile) -> "AgentConfigBuilder":
         """
         Set the default agent profile used for tasks.
 
@@ -102,7 +102,7 @@ class AgentConfigBuilder:
         self._task_request_defaults = copy.deepcopy(config)
         return self
 
-    def with_hw_bridge_base_url(self, url: Union[str, ApiBaseUrl]) -> "AgentConfigBuilder":
+    def with_hw_bridge_base_url(self, url: str | ApiBaseUrl) -> "AgentConfigBuilder":
         """
         Set the base URL for the device HW bridge API.
 
@@ -114,7 +114,7 @@ class AgentConfigBuilder:
         self._servers.hw_bridge_base_url = url
         return self
 
-    def with_screen_api_base_url(self, url: Union[str, ApiBaseUrl]) -> "AgentConfigBuilder":
+    def with_screen_api_base_url(self, url: str | ApiBaseUrl) -> "AgentConfigBuilder":
         """
         Set the base URL for the device screen API.
 

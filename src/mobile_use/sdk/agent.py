@@ -5,7 +5,7 @@ import sys
 import tempfile
 import time
 from types import NoneType
-from typing import Optional, TypeVar, Union, overload
+from typing import Optional, TypeVar, overload
 import uuid
 from adbutils import AdbClient
 from langchain_core.messages import AIMessage
@@ -140,7 +140,7 @@ class Agent:
         *,
         goal: str,
         output: type[TOutput],
-        profile: Optional[Union[str, AgentProfile]] = None,
+        profile: Optional[str | AgentProfile] = None,
         name: Optional[str] = None,
     ) -> Optional[TOutput]: ...
 
@@ -150,9 +150,9 @@ class Agent:
         *,
         goal: str,
         output: str,
-        profile: Optional[Union[str, AgentProfile]] = None,
+        profile: Optional[str | AgentProfile] = None,
         name: Optional[str] = None,
-    ) -> Optional[Union[str, dict]]: ...
+    ) -> Optional[str | dict]: ...
 
     @overload
     async def run_task(
@@ -160,12 +160,12 @@ class Agent:
         *,
         goal: str,
         output=None,
-        profile: Optional[Union[str, AgentProfile]] = None,
+        profile: Optional[str | AgentProfile] = None,
         name: Optional[str] = None,
     ) -> Optional[str]: ...
 
     @overload
-    async def run_task(self, *, request: TaskRequest[None]) -> Optional[Union[str, dict]]: ...
+    async def run_task(self, *, request: TaskRequest[None]) -> Optional[str | dict]: ...
 
     @overload
     async def run_task(self, *, request: TaskRequest[TOutput]) -> Optional[TOutput]: ...
@@ -174,11 +174,11 @@ class Agent:
         self,
         *,
         goal: Optional[str] = None,
-        output: Optional[Union[type[TOutput], str]] = None,
-        profile: Optional[Union[str, AgentProfile]] = None,
+        output: Optional[type[TOutput] | str] = None,
+        profile: Optional[str | AgentProfile] = None,
         name: Optional[str] = None,
         request: Optional[TaskRequest[TOutput]] = None,
-    ) -> Optional[Union[str, dict, TOutput]]:
+    ) -> Optional[str | dict | TOutput]:
         if request is not None:
             return await self._run_task(request)
         if goal is None:
@@ -195,7 +195,7 @@ class Agent:
             task_request.with_name(name=name)
         return await self._run_task(task_request.build())
 
-    async def _run_task(self, request: TaskRequest[TOutput]) -> Optional[Union[str, dict, TOutput]]:
+    async def _run_task(self, request: TaskRequest[TOutput]) -> Optional[str | dict | TOutput]:
         if not self._initialized:
             raise AgentNotInitializedError()
 
@@ -357,7 +357,7 @@ class Agent:
         request: TaskRequest[TOutput],
         output_config: Optional[OutputConfig],
         state: State,
-    ) -> Optional[Union[str, dict, TOutput]]:
+    ) -> Optional[str | dict | TOutput]:
         if output_config and output_config.needs_structured_format():
             logger.info(f"[{task_name}] Generating structured output...")
             try:
