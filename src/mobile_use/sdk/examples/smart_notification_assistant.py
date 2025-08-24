@@ -23,7 +23,7 @@ from enum import Enum
 from typing import List
 
 from pydantic import BaseModel, Field
-from mobile_use.config import LLM, LLMConfig
+from mobile_use.config import LLM, LLMConfig, LLMConfigUtils, LLMWithFallback
 from mobile_use.sdk import Agent
 from mobile_use.sdk.builders import Builders
 from mobile_use.sdk.types import AgentProfile
@@ -65,8 +65,16 @@ def get_agent() -> Agent:
         llm_config=LLMConfig(
             planner=LLM(provider="openrouter", model="meta-llama/llama-4-scout"),
             orchestrator=LLM(provider="openrouter", model="meta-llama/llama-4-scout"),
-            cortex=LLM(provider="openai", model="o4-mini"),
+            cortex=LLMWithFallback(
+                provider="openai",
+                model="o4-mini",
+                fallback=LLM(provider="openai", model="gpt-5"),
+            ),
             executor=LLM(provider="openai", model="gpt-5-nano"),
+            utils=LLMConfigUtils(
+                outputter=LLM(provider="openai", model="gpt-5-nano"),
+                hopper=LLM(provider="openai", model="gpt-4.1"),
+            ),
         ),
         # from_file="/tmp/analyzer.jsonc"  # can be loaded from file
     )
@@ -76,9 +84,17 @@ def get_agent() -> Agent:
         name="note_taker",
         llm_config=LLMConfig(
             planner=LLM(provider="openai", model="o3"),
-            orchestrator=LLM(provider="google", model="gemini-1.5-flash"),
-            cortex=LLM(provider="openai", model="o4-mini"),
+            orchestrator=LLM(provider="google", model="gemini-2.5-flash"),
+            cortex=LLMWithFallback(
+                provider="openai",
+                model="o4-mini",
+                fallback=LLM(provider="openai", model="gpt-5"),
+            ),
             executor=LLM(provider="openai", model="gpt-4o-mini"),
+            utils=LLMConfigUtils(
+                outputter=LLM(provider="openai", model="gpt-5-nano"),
+                hopper=LLM(provider="openai", model="gpt-4.1"),
+            ),
         ),
     )
 
