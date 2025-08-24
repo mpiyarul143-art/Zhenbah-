@@ -16,6 +16,25 @@ services:
       - mobile-use-adb-keys:/home/mobile-use/.android
       - ./llm-config.override.jsonc:/app/llm-config.override.jsonc
 
+  mobile-use-full-usb:
+    container_name: mobile-use-full-usb
+    user: "mobile-use:mobile-use"
+    restart: no
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    privileged: true
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    environment:
+      RESULTS_OUTPUT_PATH: "/home/mobile-use/results.txt"
+      EVENTS_OUTPUT_PATH: "/home/mobile-use/events.json"
+    volumes:
+      - mobile-use-adb-keys:/home/mobile-use/.android
+      - ./llm-config.override.jsonc:/app/llm-config.override.jsonc
+
   mobile-use-ip:
     container_name: mobile-use
     user: "mobile-use:mobile-use"
