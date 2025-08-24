@@ -1,35 +1,36 @@
 name: Push image to GCP Docker Registry
 
 on:
-  push:
-    branches:
-      - main
-      - development
-    tags:
-      - 'v*.*.*'
+  release:
+    types:
+      - published
 
 jobs:
-  push_to_docker:
+  push-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: DockerHub
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - uses: minitap-ai/devops-common/.github/actions/gcp-docker-build-push@v1
+      - uses: minitap-ai/devops-common/.github/actions/dockerhub-build-push@v1
         with:
-          gcp-credentials: ${{ secrets.GCP_SA_KEY }}
-          gcp-project-id: ${{ vars.GCP_PROJECT_ID }}
-          gcp-region: ${{ vars.GCP_REGION }}
-          gcp-artifact-repo: ${{ vars.GCP_ARTIFACT_REPO }}
-          github-token: ${{ secrets.GH_PAT }}
-          image-name: ${{ vars.IMAGE_NAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          image-name: minitap/${{ vars.IMAGE_NAME }}
           dockerfile: ${{ github.workspace }}/Dockerfile
 
-  push_slim_to_docker:
+  push-slim-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: GCP
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: minitap-ai/devops-common/.github/actions/gcp-docker-build-push@v1
         with:
@@ -37,6 +38,6 @@ jobs:
           gcp-project-id: ${{ vars.GCP_PROJECT_ID }}
           gcp-region: ${{ vars.GCP_REGION }}
           gcp-artifact-repo: ${{ vars.GCP_ARTIFACT_REPO }}
-          github-token: ${{ secrets.GH_PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ vars.IMAGE_NAME }}-slim
           dockerfile: ${{ github.workspace }}/slim.Dockerfile
