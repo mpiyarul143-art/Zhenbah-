@@ -12,7 +12,6 @@ from langchain_core.messages import (
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from mobile_use.agents.cortex.types import CortexOutput
 from mobile_use.agents.planner.utils import get_current_subgoal
-from mobile_use.config import LLM
 from mobile_use.context import MobileUseContext
 from mobile_use.graph.state import State
 from mobile_use.services.llm import get_llm, with_fallback
@@ -69,11 +68,11 @@ class CortexNode:
             ui_hierarchy_str = json.dumps(ui_hierarchy_dict, indent=2, ensure_ascii=False)
             messages.append(HumanMessage(content="Here is the UI hierarchy:\n" + ui_hierarchy_str))
 
-        llm = get_llm(ctx=self.ctx, agent_node="cortex", temperature=1).with_structured_output(
+        llm = get_llm(ctx=self.ctx, name="cortex", temperature=1).with_structured_output(
             CortexOutput
         )
         llm_fallback = get_llm(
-            ctx=self.ctx, override_llm=LLM(provider="openai", model="gpt-5")
+            ctx=self.ctx, name="cortex", use_fallback=True, temperature=1
         ).with_structured_output(CortexOutput)
         response: CortexOutput = await with_fallback(
             main_call=lambda: llm.ainvoke(messages),

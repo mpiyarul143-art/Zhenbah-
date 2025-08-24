@@ -53,6 +53,7 @@ class AgentConfigBuilder:
             profile: The agent profile to add
         """
         self._agent_profiles[profile.name] = profile
+        profile.llm_config.validate_providers()
         return self
 
     def add_profiles(self, profiles: List[AgentProfile]) -> "AgentConfigBuilder":
@@ -64,6 +65,7 @@ class AgentConfigBuilder:
         """
         for profile in profiles:
             self.add_profile(profile=profile)
+            profile.llm_config.validate_providers()
         return self
 
     def with_default_profile(self, profile: str | AgentProfile) -> "AgentConfigBuilder":
