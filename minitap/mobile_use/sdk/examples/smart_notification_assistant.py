@@ -23,11 +23,11 @@ from enum import Enum
 from typing import List
 
 from pydantic import BaseModel, Field
-from mobile_use.config import LLM, LLMConfig, LLMConfigUtils, LLMWithFallback
-from mobile_use.sdk import Agent
-from mobile_use.sdk.builders import Builders
-from mobile_use.sdk.types import AgentProfile
-from mobile_use.sdk.types.exceptions import AgentError
+from minitap.mobile_use.config import LLM, LLMConfig, LLMConfigUtils, LLMWithFallback
+from minitap.mobile_use.sdk import Agent
+from minitap.mobile_use.sdk.builders import Builders
+from minitap.mobile_use.sdk.types import AgentProfile
+from minitap.mobile_use.sdk.types.exceptions import AgentError
 
 
 class NotificationPriority(str, Enum):

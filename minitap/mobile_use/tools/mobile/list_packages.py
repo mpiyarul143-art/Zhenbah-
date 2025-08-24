@@ -5,13 +5,13 @@ from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
-from mobile_use.agents.hopper.hopper import HopperOutput, hopper
-from mobile_use.context import MobileUseContext
-from mobile_use.controllers.platform_specific_commands_controller import (
+from minitap.mobile_use.agents.hopper.hopper import HopperOutput, hopper
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.controllers.platform_specific_commands_controller import (
     list_packages as list_packages_command,
 )
-from mobile_use.graph.state import State
-from mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
 from typing_extensions import Annotated
 
 

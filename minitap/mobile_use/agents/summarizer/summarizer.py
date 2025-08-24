@@ -3,9 +3,9 @@ from langchain_core.messages import (
     RemoveMessage,
     ToolMessage,
 )
-from mobile_use.constants import MAX_MESSAGES_IN_HISTORY
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
+from minitap.mobile_use.constants import MAX_MESSAGES_IN_HISTORY
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
 
 
 class SummarizerNode:

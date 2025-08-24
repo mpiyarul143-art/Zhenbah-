@@ -3,11 +3,11 @@ import time
 from pathlib import Path
 
 from langchain_core.messages import BaseMessage
-from mobile_use.config import record_events
-from mobile_use.context import MobileUseContext
-from mobile_use.controllers.mobile_command_controller import take_screenshot
-from mobile_use.utils.logger import get_logger
-from mobile_use.utils.media import compress_base64_jpeg
+from minitap.mobile_use.config import record_events
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.controllers.mobile_command_controller import take_screenshot
+from minitap.mobile_use.utils.logger import get_logger
+from minitap.mobile_use.utils.media import compress_base64_jpeg
 
 logger = get_logger(__name__)
 

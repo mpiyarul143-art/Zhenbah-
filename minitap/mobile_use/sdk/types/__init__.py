@@ -1,12 +1,12 @@
 """Type definitions for the mobile-use SDK."""
 
-from mobile_use.sdk.types.agent import (
+from minitap.mobile_use.sdk.types.agent import (
     ApiBaseUrl,
     AgentConfig,
     DevicePlatform,
     ServerConfig,
 )
-from mobile_use.sdk.types.task import (
+from minitap.mobile_use.sdk.types.task import (
     AgentProfile,
     TaskRequest,
     TaskStatus,
@@ -14,7 +14,7 @@ from mobile_use.sdk.types.task import (
     TaskRequestCommon,
     Task,
 )
-from mobile_use.sdk.types.exceptions import (
+from minitap.mobile_use.sdk.types.exceptions import (
     AgentProfileNotFoundError,
     AgentTaskRequestError,
     DeviceNotFoundError,

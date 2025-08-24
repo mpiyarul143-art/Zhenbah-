@@ -3,8 +3,8 @@ from pathlib import Path
 from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from mobile_use.agents.orchestrator.types import OrchestratorOutput, OrchestratorStatus
-from mobile_use.agents.planner.utils import (
+from minitap.mobile_use.agents.orchestrator.types import OrchestratorOutput, OrchestratorStatus
+from minitap.mobile_use.agents.planner.utils import (
     all_completed,
     complete_current_subgoal,
     fail_current_subgoal,
@@ -12,11 +12,11 @@ from mobile_use.agents.planner.utils import (
     nothing_started,
     start_next_subgoal,
 )
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
-from mobile_use.services.llm import get_llm
-from mobile_use.utils.decorators import wrap_with_callbacks
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.services.llm import get_llm
+from minitap.mobile_use.utils.decorators import wrap_with_callbacks
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

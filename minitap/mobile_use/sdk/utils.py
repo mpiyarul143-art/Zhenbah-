@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 
 from pydantic import ValidationError
-from mobile_use.config import LLMConfig, deep_merge_llm_config, get_default_llm_config
-from mobile_use.utils.file import load_jsonc
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.config import LLMConfig, deep_merge_llm_config, get_default_llm_config
+from minitap.mobile_use.utils.file import load_jsonc
+from minitap.mobile_use.utils.logger import get_logger
 
 
 logger = get_logger(__name__)

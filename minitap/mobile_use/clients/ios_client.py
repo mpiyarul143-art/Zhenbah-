@@ -1,7 +1,7 @@
 import json
 import platform
 
-from mobile_use.utils.shell_utils import run_shell_command_on_host
+from minitap.mobile_use.utils.shell_utils import run_shell_command_on_host
 
 
 def get_ios_devices() -> tuple[bool, list[str], str]:

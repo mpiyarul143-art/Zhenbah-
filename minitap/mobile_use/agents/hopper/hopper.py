@@ -3,8 +3,8 @@ from typing import Sequence
 
 from jinja2 import Template
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
-from mobile_use.context import MobileUseContext
-from mobile_use.services.llm import get_llm
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.services.llm import get_llm
 from pydantic import BaseModel, Field
 
 

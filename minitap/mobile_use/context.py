@@ -13,9 +13,9 @@ from openai import BaseModel
 from pydantic import ConfigDict
 from typing_extensions import Literal
 
-from mobile_use.clients.device_hardware_client import DeviceHardwareClient
-from mobile_use.clients.screen_api_client import ScreenApiClient
-from mobile_use.config import LLMConfig
+from minitap.mobile_use.clients.device_hardware_client import DeviceHardwareClient
+from minitap.mobile_use.clients.screen_api_client import ScreenApiClient
+from minitap.mobile_use.config import LLMConfig
 
 
 class DevicePlatform(str, Enum):

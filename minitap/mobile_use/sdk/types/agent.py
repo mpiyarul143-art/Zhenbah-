@@ -2,8 +2,8 @@ from typing import Dict, Literal, Optional
 from urllib.parse import urlparse
 from pydantic import BaseModel
 
-from mobile_use.context import DevicePlatform
-from mobile_use.sdk.types.task import AgentProfile, TaskRequestCommon
+from minitap.mobile_use.context import DevicePlatform
+from minitap.mobile_use.sdk.types.task import AgentProfile, TaskRequestCommon
 
 
 class ApiBaseUrl(BaseModel):

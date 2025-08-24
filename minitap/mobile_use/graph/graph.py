@@ -7,22 +7,24 @@ from langgraph.constants import END, START
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode
-from mobile_use.agents.contextor.contextor import ContextorNode
-from mobile_use.agents.cortex.cortex import CortexNode
-from mobile_use.agents.executor.executor import ExecutorNode
-from mobile_use.agents.executor.executor_context_cleaner import executor_context_cleaner_node
-from mobile_use.agents.orchestrator.orchestrator import OrchestratorNode
-from mobile_use.agents.planner.planner import PlannerNode
-from mobile_use.agents.planner.utils import (
+from minitap.mobile_use.agents.contextor.contextor import ContextorNode
+from minitap.mobile_use.agents.cortex.cortex import CortexNode
+from minitap.mobile_use.agents.executor.executor import ExecutorNode
+from minitap.mobile_use.agents.executor.executor_context_cleaner import (
+    executor_context_cleaner_node,
+)
+from minitap.mobile_use.agents.orchestrator.orchestrator import OrchestratorNode
+from minitap.mobile_use.agents.planner.planner import PlannerNode
+from minitap.mobile_use.agents.planner.utils import (
     all_completed,
     get_current_subgoal,
     one_of_them_is_failure,
 )
-from mobile_use.agents.summarizer.summarizer import SummarizerNode
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
-from mobile_use.tools.index import EXECUTOR_WRAPPERS_TOOLS, get_tools_from_wrappers
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.agents.summarizer.summarizer import SummarizerNode
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.tools.index import EXECUTOR_WRAPPERS_TOOLS, get_tools_from_wrappers
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

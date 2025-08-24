@@ -8,8 +8,8 @@ import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from mobile_use.servers.config import server_settings
-from mobile_use.servers.utils import is_port_in_use
+from minitap.mobile_use.servers.config import server_settings
+from minitap.mobile_use.servers.utils import is_port_in_use
 from sseclient import SSEClient
 
 DEVICE_HARDWARE_BRIDGE_BASE_URL = server_settings.DEVICE_HARDWARE_BRIDGE_BASE_URL

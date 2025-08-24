@@ -5,16 +5,16 @@ Builder for AgentConfig objects using a fluent interface.
 from typing import Dict, Optional, List
 import copy
 
-from mobile_use.config import get_default_llm_config
-from mobile_use.sdk.constants import (
+from minitap.mobile_use.config import get_default_llm_config
+from minitap.mobile_use.sdk.constants import (
     DEFAULT_HW_BRIDGE_BASE_URL,
     DEFAULT_PROFILE_NAME,
     DEFAULT_SCREEN_API_BASE_URL,
 )
-from mobile_use.sdk.types.agent import ApiBaseUrl, AgentConfig, ServerConfig
-from mobile_use.sdk.types.agent import AgentProfile
-from mobile_use.sdk.types.task import TaskRequestCommon
-from mobile_use.context import DevicePlatform
+from minitap.mobile_use.sdk.types.agent import ApiBaseUrl, AgentConfig, ServerConfig
+from minitap.mobile_use.sdk.types.agent import AgentProfile
+from minitap.mobile_use.sdk.types.task import TaskRequestCommon
+from minitap.mobile_use.context import DevicePlatform
 
 
 class AgentConfigBuilder:

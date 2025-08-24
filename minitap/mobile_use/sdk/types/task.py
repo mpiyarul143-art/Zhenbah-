@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import Any, Generic, Optional, Type, TypeVar, overload
 from pydantic import BaseModel, Field
 
-from mobile_use.config import LLMConfig, get_default_llm_config
-from mobile_use.constants import RECURSION_LIMIT
-from mobile_use.context import DeviceContext
-from mobile_use.sdk.utils import load_llm_config_override
+from minitap.mobile_use.config import LLMConfig, get_default_llm_config
+from minitap.mobile_use.constants import RECURSION_LIMIT
+from minitap.mobile_use.context import DeviceContext
+from minitap.mobile_use.sdk.utils import load_llm_config_override
 
 
 class AgentProfile(BaseModel):

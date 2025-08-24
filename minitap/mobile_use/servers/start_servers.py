@@ -8,12 +8,12 @@ from typing import Annotated, Optional
 
 import requests
 import typer
-from mobile_use.context import DevicePlatform
-from mobile_use.servers.config import server_settings
-from mobile_use.servers.device_hardware_bridge import DeviceHardwareBridge
-from mobile_use.servers.device_screen_api import start as _start_device_screen_api
-from mobile_use.servers.stop_servers import stop_servers
-from mobile_use.utils.logger import get_server_logger
+from minitap.mobile_use.context import DevicePlatform
+from minitap.mobile_use.servers.config import server_settings
+from minitap.mobile_use.servers.device_hardware_bridge import DeviceHardwareBridge
+from minitap.mobile_use.servers.device_screen_api import start as _start_device_screen_api
+from minitap.mobile_use.servers.stop_servers import stop_servers
+from minitap.mobile_use.utils.logger import get_server_logger
 
 logger = get_server_logger()
 

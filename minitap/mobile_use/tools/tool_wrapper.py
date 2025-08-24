@@ -3,8 +3,8 @@ from typing import Callable, Optional
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
 
 
 class ExecutorMetadata(BaseModel):

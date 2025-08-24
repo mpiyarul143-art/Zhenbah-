@@ -1,7 +1,7 @@
-from mobile_use.agents.outputter.outputter import outputter
-from mobile_use.config import LLM, OutputConfig
-from mobile_use.context import MobileUseContext
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.agents.outputter.outputter import outputter
+from minitap.mobile_use.config import LLM, OutputConfig
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.utils.logger import get_logger
 from pydantic import BaseModel
 
 logger = get_logger(__name__)

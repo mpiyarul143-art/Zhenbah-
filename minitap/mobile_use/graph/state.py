@@ -3,10 +3,10 @@ from langgraph.graph import add_messages
 from langgraph.prebuilt.chat_agent_executor import AgentStatePydantic
 from typing_extensions import Annotated, Optional
 
-from mobile_use.agents.planner.types import Subgoal
-from mobile_use.utils.logger import get_logger
-from mobile_use.utils.recorder import record_interaction
-from mobile_use.context import MobileUseContext
+from minitap.mobile_use.agents.planner.types import Subgoal
+from minitap.mobile_use.utils.logger import get_logger
+from minitap.mobile_use.utils.recorder import record_interaction
+from minitap.mobile_use.context import MobileUseContext
 
 logger = get_logger(__name__)
 

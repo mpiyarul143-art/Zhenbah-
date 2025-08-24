@@ -2,13 +2,13 @@ from pathlib import Path
 
 from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
-from mobile_use.agents.planner.types import PlannerOutput, Subgoal, SubgoalStatus
-from mobile_use.agents.planner.utils import one_of_them_is_failure
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
-from mobile_use.services.llm import get_llm
-from mobile_use.utils.decorators import wrap_with_callbacks
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.agents.planner.types import PlannerOutput, Subgoal, SubgoalStatus
+from minitap.mobile_use.agents.planner.utils import one_of_them_is_failure
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.services.llm import get_llm
+from minitap.mobile_use.utils.decorators import wrap_with_callbacks
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

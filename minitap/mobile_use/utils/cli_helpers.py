@@ -1,6 +1,6 @@
 import sys
 
-from mobile_use.clients.ios_client import get_ios_devices
+from minitap.mobile_use.clients.ios_client import get_ios_devices
 from adbutils import AdbClient
 from rich.console import Console
 from typing import Optional

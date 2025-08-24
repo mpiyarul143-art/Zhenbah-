@@ -1,4 +1,4 @@
-from mobile_use.agents.planner.types import Subgoal, SubgoalStatus
+from minitap.mobile_use.agents.planner.types import Subgoal, SubgoalStatus
 
 
 def get_current_subgoal(subgoals: list[Subgoal]) -> Subgoal | None:

@@ -10,43 +10,54 @@ import uuid
 from adbutils import AdbClient
 from langchain_core.messages import AIMessage
 from pydantic import BaseModel
-from mobile_use.agents.outputter.outputter import outputter
+from minitap.mobile_use.agents.outputter.outputter import outputter
 
-from mobile_use.config import OutputConfig, record_events
-from mobile_use.graph.graph import get_graph
-from mobile_use.graph.state import State
-from mobile_use.sdk.builders.agent_config_builder import get_default_agent_config
-from mobile_use.sdk.builders.task_request_builder import TaskRequestBuilder
-from mobile_use.sdk.constants import (
+from minitap.mobile_use.config import OutputConfig, record_events
+from minitap.mobile_use.graph.graph import get_graph
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.sdk.builders.agent_config_builder import get_default_agent_config
+from minitap.mobile_use.sdk.builders.task_request_builder import TaskRequestBuilder
+from minitap.mobile_use.sdk.constants import (
     DEFAULT_HW_BRIDGE_BASE_URL,
     DEFAULT_SCREEN_API_BASE_URL,
 )
-from mobile_use.sdk.types.agent import AgentConfig
-from mobile_use.context import DeviceContext, DevicePlatform, ExecutionSetup, MobileUseContext
-from mobile_use.clients.device_hardware_client import DeviceHardwareClient
-from mobile_use.clients.screen_api_client import ScreenApiClient
-from mobile_use.controllers.mobile_command_controller import ScreenDataResponse, get_screen_data
-from mobile_use.controllers.platform_specific_commands_controller import get_first_device
+from minitap.mobile_use.sdk.types.agent import AgentConfig
+from minitap.mobile_use.context import (
+    DeviceContext,
+    DevicePlatform,
+    ExecutionSetup,
+    MobileUseContext,
+)
+from minitap.mobile_use.clients.device_hardware_client import DeviceHardwareClient
+from minitap.mobile_use.clients.screen_api_client import ScreenApiClient
+from minitap.mobile_use.controllers.mobile_command_controller import (
+    ScreenDataResponse,
+    get_screen_data,
+)
+from minitap.mobile_use.controllers.platform_specific_commands_controller import get_first_device
 
-from mobile_use.servers.stop_servers import stop_servers
-from mobile_use.servers.device_hardware_bridge import BridgeStatus
-from mobile_use.servers.start_servers import start_device_hardware_bridge, start_device_screen_api
-from mobile_use.utils.logger import get_logger
-from mobile_use.sdk.types.exceptions import (
+from minitap.mobile_use.servers.stop_servers import stop_servers
+from minitap.mobile_use.servers.device_hardware_bridge import BridgeStatus
+from minitap.mobile_use.servers.start_servers import (
+    start_device_hardware_bridge,
+    start_device_screen_api,
+)
+from minitap.mobile_use.utils.logger import get_logger
+from minitap.mobile_use.sdk.types.exceptions import (
     AgentProfileNotFoundError,
     AgentTaskRequestError,
     DeviceNotFoundError,
     ServerStartupError,
     AgentNotInitializedError,
 )
-from mobile_use.sdk.types.task import AgentProfile, Task, TaskRequest, TaskStatus
-from mobile_use.utils.media import (
+from minitap.mobile_use.sdk.types.task import AgentProfile, Task, TaskRequest, TaskStatus
+from minitap.mobile_use.utils.media import (
     create_gif_from_trace_folder,
     create_steps_json_from_trace_folder,
     remove_images_from_trace_folder,
     remove_steps_json_from_trace_folder,
 )
-from mobile_use.utils.recorder import log_agent_thoughts
+from minitap.mobile_use.utils.recorder import log_agent_thoughts
 
 
 logger = get_logger(__name__)

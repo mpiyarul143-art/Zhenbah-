@@ -14,7 +14,7 @@ Run:
 import asyncio
 from datetime import date, timedelta
 from pydantic import BaseModel, Field
-from mobile_use.sdk import Agent
+from minitap.mobile_use.sdk import Agent
 
 
 class PhotosResult(BaseModel):

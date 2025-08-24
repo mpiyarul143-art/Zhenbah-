@@ -4,12 +4,12 @@ from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.messages.ai import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
-from mobile_use.services.llm import get_llm
-from mobile_use.tools.index import EXECUTOR_WRAPPERS_TOOLS, get_tools_from_wrappers
-from mobile_use.utils.decorators import wrap_with_callbacks
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.services.llm import get_llm
+from minitap.mobile_use.tools.index import EXECUTOR_WRAPPERS_TOOLS, get_tools_from_wrappers
+from minitap.mobile_use.utils.decorators import wrap_with_callbacks
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

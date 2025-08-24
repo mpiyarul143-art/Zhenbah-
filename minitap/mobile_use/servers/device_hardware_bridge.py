@@ -7,8 +7,8 @@ from enum import Enum
 from typing import Optional
 
 import requests
-from mobile_use.context import DevicePlatform
-from mobile_use.servers.utils import is_port_in_use
+from minitap.mobile_use.context import DevicePlatform
+from minitap.mobile_use.servers.utils import is_port_in_use
 
 MAESTRO_STUDIO_PORT = 9999
 DEVICE_HARDWARE_BRIDGE_PORT = MAESTRO_STUDIO_PORT

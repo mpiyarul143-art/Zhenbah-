@@ -7,19 +7,19 @@ from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
 from typing_extensions import Annotated
 
-from mobile_use.controllers.mobile_command_controller import (
+from minitap.mobile_use.controllers.mobile_command_controller import (
     ScreenDataResponse,
     WaitTimeout,
     get_screen_data,
     wait_for_animation_to_end,
 )
-from mobile_use.controllers.mobile_command_controller import (
+from minitap.mobile_use.controllers.mobile_command_controller import (
     erase_text as erase_text_controller,
 )
-from mobile_use.graph.state import State
-from mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
-from mobile_use.utils.ui_hierarchy import find_element_by_resource_id
-from mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.utils.ui_hierarchy import find_element_by_resource_id
+from minitap.mobile_use.context import MobileUseContext
 
 
 def get_erase_text_tool(ctx: MobileUseContext):

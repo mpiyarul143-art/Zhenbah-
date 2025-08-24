@@ -7,9 +7,9 @@ from typing import Generic, Optional, Self, TypeVar, cast
 
 from pydantic import BaseModel
 
-from mobile_use.constants import RECURSION_LIMIT
-from mobile_use.sdk.types.agent import AgentProfile
-from mobile_use.sdk.types.task import TaskRequest, TaskRequestCommon
+from minitap.mobile_use.constants import RECURSION_LIMIT
+from minitap.mobile_use.sdk.types.agent import AgentProfile
+from minitap.mobile_use.sdk.types.task import TaskRequest, TaskRequestCommon
 
 
 TIn = TypeVar("TIn", bound=Optional[BaseModel])

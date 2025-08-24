@@ -7,11 +7,11 @@ from langgraph.types import Command
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 from requests import JSONDecodeError
 
-from mobile_use.clients.device_hardware_client import DeviceHardwareClient
-from mobile_use.clients.screen_api_client import ScreenApiClient
-from mobile_use.context import DeviceContext, DevicePlatform, MobileUseContext
-from mobile_use.utils.errors import ControllerErrors
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.clients.device_hardware_client import DeviceHardwareClient
+from minitap.mobile_use.clients.screen_api_client import ScreenApiClient
+from minitap.mobile_use.context import DeviceContext, DevicePlatform, MobileUseContext
+from minitap.mobile_use.utils.errors import ControllerErrors
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -346,8 +346,8 @@ if __name__ == "__main__":
         screen_api_client=ScreenApiClient("http://localhost:9998"),
     )
     screen_data = get_screen_data(ctx.screen_api_client)
-    from mobile_use.graph.state import State
-    from mobile_use.tools.mobile.erase_text import get_erase_text_tool
+    from minitap.mobile_use.graph.state import State
+    from minitap.mobile_use.tools.mobile.erase_text import get_erase_text_tool
 
     dummy_state = State(
         latest_ui_hierarchy=screen_data.elements,

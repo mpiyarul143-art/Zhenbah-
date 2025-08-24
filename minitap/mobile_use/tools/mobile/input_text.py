@@ -4,12 +4,14 @@ from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langgraph.types import Command
-from mobile_use.controllers.mobile_command_controller import input_text as input_text_controller
-from mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.controllers.mobile_command_controller import (
+    input_text as input_text_controller,
+)
+from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
 from typing_extensions import Annotated
-from mobile_use.graph.state import State
+from minitap.mobile_use.graph.state import State
 from langgraph.prebuilt import InjectedState
-from mobile_use.context import MobileUseContext
+from minitap.mobile_use.context import MobileUseContext
 
 
 def get_input_text_tool(ctx: MobileUseContext):

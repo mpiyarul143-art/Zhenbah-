@@ -4,14 +4,14 @@ from typing_extensions import overload
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
-from mobile_use.config import (
+from minitap.mobile_use.config import (
     AgentNode,
     AgentNodeWithFallback,
     LLMUtilsNode,
     LLMWithFallback,
     settings,
 )
-from mobile_use.context import MobileUseContext
+from minitap.mobile_use.context import MobileUseContext
 
 logger = logging.getLogger(__name__)
 

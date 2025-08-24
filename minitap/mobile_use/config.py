@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field, SecretStr, ValidationError, model_validator
 from pydantic_settings import BaseSettings
 
-from mobile_use.utils.file import load_jsonc
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.utils.file import load_jsonc
+from minitap.mobile_use.utils.logger import get_logger
 
 ### Environment Variables
 

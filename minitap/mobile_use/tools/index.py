@@ -1,23 +1,25 @@
 from langchain_core.tools import BaseTool
-from mobile_use.context import MobileUseContext
-from mobile_use.tools.mobile.back import back_wrapper
-from mobile_use.tools.mobile.copy_text_from import copy_text_from_wrapper
-from mobile_use.tools.mobile.erase_text import erase_text_wrapper
-from mobile_use.tools.mobile.input_text import input_text_wrapper
-from mobile_use.tools.mobile.launch_app import launch_app_wrapper
-from mobile_use.tools.mobile.list_packages import list_packages_wrapper
-from mobile_use.tools.mobile.long_press_on import long_press_on_wrapper
-from mobile_use.tools.mobile.open_link import open_link_wrapper
-from mobile_use.tools.mobile.paste_text import paste_text_wrapper
-from mobile_use.tools.mobile.press_key import press_key_wrapper
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.tools.mobile.back import back_wrapper
+from minitap.mobile_use.tools.mobile.copy_text_from import copy_text_from_wrapper
+from minitap.mobile_use.tools.mobile.erase_text import erase_text_wrapper
+from minitap.mobile_use.tools.mobile.input_text import input_text_wrapper
+from minitap.mobile_use.tools.mobile.launch_app import launch_app_wrapper
+from minitap.mobile_use.tools.mobile.list_packages import list_packages_wrapper
+from minitap.mobile_use.tools.mobile.long_press_on import long_press_on_wrapper
+from minitap.mobile_use.tools.mobile.open_link import open_link_wrapper
+from minitap.mobile_use.tools.mobile.paste_text import paste_text_wrapper
+from minitap.mobile_use.tools.mobile.press_key import press_key_wrapper
 
-# from mobile_use.tools.mobile.run_flow import run_flow_wrapper
-from mobile_use.tools.mobile.stop_app import stop_app_wrapper
-from mobile_use.tools.mobile.swipe import swipe_wrapper
-from mobile_use.tools.mobile.take_screenshot import take_screenshot_wrapper
-from mobile_use.tools.mobile.tap import tap_wrapper
-from mobile_use.tools.mobile.wait_for_animation_to_end import wait_for_animation_to_end_wrapper
-from mobile_use.tools.tool_wrapper import ToolWrapper
+# from minitap.mobile_use.tools.mobile.run_flow import run_flow_wrapper
+from minitap.mobile_use.tools.mobile.stop_app import stop_app_wrapper
+from minitap.mobile_use.tools.mobile.swipe import swipe_wrapper
+from minitap.mobile_use.tools.mobile.take_screenshot import take_screenshot_wrapper
+from minitap.mobile_use.tools.mobile.tap import tap_wrapper
+from minitap.mobile_use.tools.mobile.wait_for_animation_to_end import (
+    wait_for_animation_to_end_wrapper,
+)
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 
 EXECUTOR_WRAPPERS_TOOLS = [
     back_wrapper,

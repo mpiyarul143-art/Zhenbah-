@@ -1,7 +1,7 @@
 from langchain_core.messages.ai import AIMessage
-from mobile_use.graph.state import State
-from mobile_use.utils.decorators import wrap_with_callbacks
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.utils.decorators import wrap_with_callbacks
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

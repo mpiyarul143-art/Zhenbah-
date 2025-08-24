@@ -1,4 +1,4 @@
-from mobile_use.sdk.types.agent import ApiBaseUrl
+from minitap.mobile_use.sdk.types.agent import ApiBaseUrl
 
 
 DEFAULT_PROFILE_NAME = "default"

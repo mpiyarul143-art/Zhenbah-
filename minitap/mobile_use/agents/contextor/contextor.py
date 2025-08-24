@@ -1,13 +1,13 @@
-from mobile_use.agents.executor.utils import is_last_tool_message_take_screenshot
-from mobile_use.controllers.mobile_command_controller import get_screen_data
-from mobile_use.controllers.platform_specific_commands_controller import (
+from minitap.mobile_use.agents.executor.utils import is_last_tool_message_take_screenshot
+from minitap.mobile_use.controllers.mobile_command_controller import get_screen_data
+from minitap.mobile_use.controllers.platform_specific_commands_controller import (
     get_device_date,
     get_focused_app_info,
 )
-from mobile_use.graph.state import State
-from mobile_use.utils.decorators import wrap_with_callbacks
-from mobile_use.utils.logger import get_logger
-from mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.utils.decorators import wrap_with_callbacks
+from minitap.mobile_use.utils.logger import get_logger
+from minitap.mobile_use.context import MobileUseContext
 
 logger = get_logger(__name__)
 

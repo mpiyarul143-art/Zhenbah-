@@ -7,15 +7,15 @@ import typer
 from rich.console import Console
 from typing_extensions import Annotated
 
-from mobile_use.config import (
+from minitap.mobile_use.config import (
     initialize_llm_config,
     settings,
 )
-from mobile_use.sdk import Agent
-from mobile_use.sdk.builders import Builders
-from mobile_use.sdk.types.task import AgentProfile
-from mobile_use.utils.cli_helpers import display_device_status
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.sdk import Agent
+from minitap.mobile_use.sdk.builders import Builders
+from minitap.mobile_use.sdk.types.task import AgentProfile
+from minitap.mobile_use.utils.cli_helpers import display_device_status
+from minitap.mobile_use.utils.logger import get_logger
 
 app = typer.Typer(add_completion=False, pretty_exceptions_enable=False)
 logger = get_logger(__name__)

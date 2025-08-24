@@ -1,5 +1,5 @@
 from langchain_core.messages import BaseMessage
-from mobile_use.utils.conversations import is_tool_message
+from minitap.mobile_use.utils.conversations import is_tool_message
 
 
 def is_last_tool_message_take_screenshot(messages: list[BaseMessage]) -> bool:

@@ -10,14 +10,14 @@ from langchain_core.messages import (
     ToolMessage,
 )
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
-from mobile_use.agents.cortex.types import CortexOutput
-from mobile_use.agents.planner.utils import get_current_subgoal
-from mobile_use.context import MobileUseContext
-from mobile_use.graph.state import State
-from mobile_use.services.llm import get_llm, with_fallback
-from mobile_use.utils.conversations import get_screenshot_message_for_llm
-from mobile_use.utils.decorators import wrap_with_callbacks
-from mobile_use.utils.logger import get_logger
+from minitap.mobile_use.agents.cortex.types import CortexOutput
+from minitap.mobile_use.agents.planner.utils import get_current_subgoal
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.services.llm import get_llm, with_fallback
+from minitap.mobile_use.utils.conversations import get_screenshot_message_for_llm
+from minitap.mobile_use.utils.decorators import wrap_with_callbacks
+from minitap.mobile_use.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

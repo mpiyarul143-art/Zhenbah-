@@ -5,10 +5,12 @@ from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
-from mobile_use.context import MobileUseContext
-from mobile_use.controllers.mobile_command_controller import open_link as open_link_controller
-from mobile_use.graph.state import State
-from mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.controllers.mobile_command_controller import (
+    open_link as open_link_controller,
+)
+from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
 from typing_extensions import Annotated
 
 

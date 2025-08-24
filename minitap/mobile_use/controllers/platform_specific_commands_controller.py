@@ -3,10 +3,10 @@ import json
 from typing import Optional
 
 from adbutils import AdbDevice
-from mobile_use.utils.logger import MobileUseLogger
-from mobile_use.utils.shell_utils import run_shell_command_on_host
-from mobile_use.context import MobileUseContext
-from mobile_use.context import DevicePlatform
+from minitap.mobile_use.utils.logger import MobileUseLogger
+from minitap.mobile_use.utils.shell_utils import run_shell_command_on_host
+from minitap.mobile_use.context import MobileUseContext
+from minitap.mobile_use.context import DevicePlatform
 
 
 def get_adb_device(ctx: MobileUseContext) -> AdbDevice:

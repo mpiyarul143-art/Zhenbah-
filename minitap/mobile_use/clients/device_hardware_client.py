@@ -1,6 +1,6 @@
 from urllib.parse import urljoin
 
-from mobile_use.utils.requests_utils import get_session_with_curl_logging
+from minitap.mobile_use.utils.requests_utils import get_session_with_curl_logging
 
 
 class DeviceHardwareClient:
