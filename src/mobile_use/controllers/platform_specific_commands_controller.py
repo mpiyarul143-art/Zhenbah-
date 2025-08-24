@@ -1,7 +1,9 @@
 from datetime import date
+import json
 from typing import Optional
 
 from adbutils import AdbDevice
+from mobile_use.utils.logger import MobileUseLogger
 from mobile_use.utils.shell_utils import run_shell_command_on_host
 from mobile_use.context import MobileUseContext
 from mobile_use.context import DevicePlatform
@@ -17,15 +19,35 @@ def get_adb_device(ctx: MobileUseContext) -> AdbDevice:
     return device
 
 
-def get_first_device_id() -> str:
+def get_first_device(
+    logger: Optional[MobileUseLogger] = None,
+) -> tuple[Optional[str], Optional[DevicePlatform]]:
     """Gets the first available device."""
-    android_output = run_shell_command_on_host("adb devices")
-    lines = android_output.strip().split("\n")
-    for line in lines:
-        if "device" in line and not line.startswith("List of devices"):
-            return line.split()[0]
-    ios_output = run_shell_command_on_host("xcrun simctl list devices booted")
-    return ios_output
+    try:
+        android_output = run_shell_command_on_host("adb devices")
+        lines = android_output.strip().split("\n")
+        for line in lines:
+            if "device" in line and not line.startswith("List of devices"):
+                return line.split()[0], DevicePlatform.ANDROID
+    except RuntimeError as e:
+        if logger:
+            logger.error(f"ADB command failed: {e}")
+        return None, None
+
+    try:
+        ios_output = run_shell_command_on_host("xcrun simctl list devices booted -j")
+        data = json.loads(ios_output)
+        for runtime, devices in data.get("devices", {}).items():
+            if "iOS" not in runtime:
+                continue
+            for device in devices:
+                if device.get("state") == "Booted":
+                    return device["udid"], DevicePlatform.IOS
+    except RuntimeError as e:
+        if logger:
+            logger.error(f"xcrun command failed: {e}")
+
+    return None, None
 
 
 def get_focused_app_info(ctx: MobileUseContext) -> Optional[str]:

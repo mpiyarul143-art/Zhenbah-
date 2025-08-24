@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Optional
 
 import requests
+from mobile_use.context import DevicePlatform
 from mobile_use.servers.utils import is_port_in_use
 
 MAESTRO_STUDIO_PORT = 9999
@@ -23,13 +24,14 @@ class BridgeStatus(Enum):
 
 
 class DeviceHardwareBridge:
-    def __init__(self, device_id: str, adb_host: Optional[str] = None):
+    def __init__(self, device_id: str, platform: DevicePlatform, adb_host: Optional[str] = None):
         self.process = None
         self.status = BridgeStatus.STOPPED
         self.thread = None
         self.output = []
         self.lock = threading.Lock()
         self.device_id: str = device_id
+        self.platform: DevicePlatform = platform
         self.adb_host: Optional[str] = adb_host
 
     def _run_maestro_studio(self):
@@ -38,7 +40,8 @@ class DeviceHardwareBridge:
             if hasattr(subprocess, "CREATE_NO_WINDOW"):
                 creation_flags = subprocess.CREATE_NO_WINDOW
 
-            cmd = ["maestro", "--device", self.device_id]
+            maestro_platform = "android" if self.platform == DevicePlatform.ANDROID else "ios"
+            cmd = ["maestro", "--device", self.device_id, "--platform", maestro_platform]
             if self.adb_host is not None:
                 cmd.append(f"--host={self.adb_host}")
             cmd.extend(["studio", "--no-window"])

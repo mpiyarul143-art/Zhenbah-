@@ -4,6 +4,7 @@ from typing import Sequence
 from jinja2 import Template
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from mobile_use.config import LLM
+from mobile_use.context import MobileUseContext
 from mobile_use.services.llm import get_llm
 from pydantic import BaseModel, Field
 
@@ -19,6 +20,7 @@ class HopperOutput(BaseModel):
 
 
 async def hopper(
+    ctx: MobileUseContext,
     initial_goal: str,
     messages: Sequence[BaseMessage],
     data: str,
@@ -35,7 +37,7 @@ async def hopper(
         HumanMessage(content=data),
     ]
 
-    llm = get_llm(override_llm=LLM(provider="openai", model="gpt-4.1"), temperature=0)
+    llm = get_llm(ctx=ctx, override_llm=LLM(provider="openai", model="gpt-4.1"), temperature=0)
     structured_llm = llm.with_structured_output(HopperOutput)
     response: HopperOutput = await structured_llm.ainvoke(messages)  # type: ignore
     return HopperOutput(

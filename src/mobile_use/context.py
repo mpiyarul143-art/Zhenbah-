@@ -5,6 +5,7 @@ Uses ContextVar to avoid prop drilling and maintain clean function signatures.
 """
 
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 from adbutils import AdbClient
@@ -14,6 +15,7 @@ from typing_extensions import Literal
 
 from mobile_use.clients.device_hardware_client import DeviceHardwareClient
 from mobile_use.clients.screen_api_client import ScreenApiClient
+from mobile_use.config import LLMConfig
 
 
 class DevicePlatform(str, Enum):
@@ -40,8 +42,10 @@ class DeviceContext(BaseModel):
         )
 
 
-# only contains the trace id for now. may contain other things later
 class ExecutionSetup(BaseModel):
+    """Execution setup for a task."""
+
+    traces_path: Path
     trace_id: str
 
 
@@ -51,6 +55,7 @@ class MobileUseContext(BaseModel):
     device: DeviceContext
     hw_bridge_client: DeviceHardwareClient
     screen_api_client: ScreenApiClient
+    llm_config: LLMConfig
     adb_client: Optional[AdbClient] = None
     execution_setup: Optional[ExecutionSetup] = None
 

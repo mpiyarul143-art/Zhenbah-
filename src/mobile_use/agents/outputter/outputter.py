@@ -5,6 +5,7 @@ from typing import Dict, Type, Union
 from jinja2 import Template
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from mobile_use.config import LLM, OutputConfig
+from mobile_use.context import MobileUseContext
 from mobile_use.graph.state import State
 from mobile_use.services.llm import get_llm
 from mobile_use.utils.conversations import is_ai_message
@@ -14,7 +15,9 @@ from pydantic import BaseModel
 logger = get_logger(__name__)
 
 
-async def outputter(output_config: OutputConfig, graph_output: State) -> dict:
+async def outputter(
+    ctx: MobileUseContext, output_config: OutputConfig, graph_output: State
+) -> dict:
     logger.info("Starting Outputter Agent")
     last_message = graph_output.messages[-1] if graph_output.messages else None
 
@@ -42,7 +45,7 @@ async def outputter(output_config: OutputConfig, graph_output: State) -> dict:
     if output_config.output_description:
         messages.append(HumanMessage(content=output_config.output_description))
 
-    llm = get_llm(override_llm=LLM(provider="openai", model="gpt-5-nano"), temperature=1)
+    llm = get_llm(ctx=ctx, override_llm=LLM(provider="openai", model="gpt-5-nano"), temperature=1)
     structured_llm = llm
 
     if output_config.structured_output:

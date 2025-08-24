@@ -34,7 +34,7 @@ def display_device_status(console: Console, adb_client: Optional[AdbClient] = No
         else:
             console.print("❌ [bold red]No iOS device found.[/bold red]")
             console.print(
-                "Please make sure your emulator is running or a device is connected via USB."
+                "[iOS] Please make sure your emulator is running or a device is connected via USB."
             )
         return
     console.print(f"❌ [bold red]iOS check failed:[/bold red] {error_message}")

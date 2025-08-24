@@ -1,5 +1,6 @@
 from mobile_use.agents.outputter.outputter import outputter
-from mobile_use.config import OutputConfig
+from mobile_use.config import LLM, OutputConfig
+from mobile_use.context import MobileUseContext
 from mobile_use.utils.logger import get_logger
 from pydantic import BaseModel
 
@@ -39,6 +40,15 @@ mocked_state = DummyState(
     ],
 )
 
+mocked_ctx = MobileUseContext(
+    llm_config={
+        "executor": LLM(provider="openai", model="gpt-5-nano"),
+        "cortex": LLM(provider="openai", model="gpt-5-nano"),
+        "planner": LLM(provider="openai", model="gpt-5-nano"),
+        "orchestrator": LLM(provider="openai", model="gpt-5-nano"),
+    },
+)  # type: ignore
+
 
 async def test_outputter_with_pydantic_model():
     logger.info("Starting test_outputter_with_pydantic_model")
@@ -47,7 +57,7 @@ async def test_outputter_with_pydantic_model():
         output_description=None,
     )
 
-    result = await outputter(output_config=config, graph_output=mocked_state)  # type: ignore
+    result = await outputter(ctx=mocked_ctx, output_config=config, graph_output=mocked_state)  # type: ignore
 
     assert isinstance(result, MockPydanticSchema)
     assert result.color.lower() == "green"
@@ -61,7 +71,7 @@ async def test_outputter_with_dict():
         output_description=None,
     )
 
-    result = await outputter(output_config=config, graph_output=mocked_state)  # type: ignore
+    result = await outputter(ctx=mocked_ctx, output_config=config, graph_output=mocked_state)  # type: ignore
 
     assert isinstance(result, dict)
     assert result.get("color", None) == "green"
@@ -79,7 +89,7 @@ async def test_outputter_with_natural_language_output():
         a price, a currency_symbol and a website_url key",
     )
 
-    result = await outputter(output_config=config, graph_output=mocked_state)  # type: ignore
+    result = await outputter(ctx=mocked_ctx, output_config=config, graph_output=mocked_state)  # type: ignore
     logger.info(str(result))
 
     assert isinstance(result, dict)

@@ -69,7 +69,7 @@ def prepare_output_files() -> tuple[str | None, str | None]:
     return validated_events_path, validated_results_path
 
 
-def record_events(output_path: str | None, events: Union[list[str], BaseModel, Any]):
+def record_events(output_path: Path | None, events: Union[list[str], BaseModel, Any]):
     if not output_path:
         return
 
