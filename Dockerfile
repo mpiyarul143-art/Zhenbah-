@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project --no-dev
-COPY src /app/src
+COPY minitap /app/minitap
 COPY pyproject.toml pyrightconfig.json requirements.txt uv.lock \
     README.md CONTRIBUTING.md llm-config.defaults.jsonc LICENSE \
     /app/

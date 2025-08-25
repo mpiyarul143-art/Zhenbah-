@@ -1,0 +1,38 @@
+name: Package and Publish to PyPI
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: PyPI
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      
+      - name: Get package version
+        run: |
+          PACKAGE_VERSION="$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')"
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+      
+      - name: Check package version
+        uses: minitap-ai/devops-common/.github/actions/check-tag-version@v1
+        with:
+          expected-tag-version: ${{ env.PACKAGE_VERSION }}
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish package
+        run: uv publish
