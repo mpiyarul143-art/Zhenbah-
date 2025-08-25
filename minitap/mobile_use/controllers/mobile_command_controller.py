@@ -9,6 +9,7 @@ from requests import JSONDecodeError
 
 from minitap.mobile_use.clients.device_hardware_client import DeviceHardwareClient
 from minitap.mobile_use.clients.screen_api_client import ScreenApiClient
+from minitap.mobile_use.config import initialize_llm_config
 from minitap.mobile_use.context import DeviceContext, DevicePlatform, MobileUseContext
 from minitap.mobile_use.utils.errors import ControllerErrors
 from minitap.mobile_use.utils.logger import get_logger
@@ -331,12 +332,10 @@ def run_flow_with_wait_for_animation_to_end(
 
 
 if __name__ == "__main__":
-    # long press, erase
-    # input_text(text="test")
-    # erase_text()
     ctx = MobileUseContext(
+        llm_config=initialize_llm_config(),
         device=DeviceContext(
-            host_platform="LINUX",
+            host_platform="WINDOWS",
             mobile_platform=DevicePlatform.ANDROID,
             device_id="emulator-5554",
             device_width=1080,
