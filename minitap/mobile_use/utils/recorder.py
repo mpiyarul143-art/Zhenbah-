@@ -1,9 +1,9 @@
 import base64
 import time
-from pathlib import Path
 
+from colorama import Fore, Style
 from langchain_core.messages import BaseMessage
-from minitap.mobile_use.config import record_events
+
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.controllers.mobile_command_controller import take_screenshot
 from minitap.mobile_use.utils.logger import get_logger
@@ -45,11 +45,12 @@ def record_interaction(ctx: MobileUseContext, response: BaseMessage):
     return "Screenshot recorded successfully"
 
 
-def log_agent_thoughts(agents_thoughts: list[str], output_path: Path | None):
-    if len(agents_thoughts) > 0:
-        last_agents_thoughts = agents_thoughts[-1]
-        previous_last_agents_thoughts = agents_thoughts[-2] if len(agents_thoughts) > 1 else None
-        if previous_last_agents_thoughts != last_agents_thoughts:
-            logger.info(f"💭 {last_agents_thoughts}")
-            if output_path:
-                record_events(output_path=output_path, events=agents_thoughts)
+def log_agent_thought(prefix: str, agent_thought: str):
+    if prefix:
+        prefix = prefix[0].upper() + prefix[1:]
+    else:
+        prefix = "New agent thought"
+    logger.info(
+        f"💭 {Fore.LIGHTMAGENTA_EX + Style.BRIGHT}{prefix}{Style.RESET_ALL}: "
+        f"{Fore.LIGHTMAGENTA_EX}{agent_thought}{Style.RESET_ALL}"
+    )
