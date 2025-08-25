@@ -1,9 +1,9 @@
 import asyncio
 import os
-from adbutils import AdbClient
 from typing import Optional
 
 import typer
+from adbutils import AdbClient
 from rich.console import Console
 from typing_extensions import Annotated
 
@@ -41,7 +41,7 @@ async def run_automation(
     agent = Agent(config=config.build())
     agent.init(
         retry_count=int(os.getenv("MOBILE_USE_HEALTH_RETRIES", 5)),
-        retry_wait_seconds=int(os.getenv("MOBILE_USE_HEALTH_DELAY", 5)),
+        retry_wait_seconds=int(os.getenv("MOBILE_USE_HEALTH_DELAY", 2)),
     )
 
     task = agent.new_task(goal)
