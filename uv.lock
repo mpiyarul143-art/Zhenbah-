@@ -1173,7 +1173,7 @@ wheels = [
 
 [[package]]
 name = "minitap-mobile-use"
-version = "0.0.1"
+version = "2.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "adbutils" },
