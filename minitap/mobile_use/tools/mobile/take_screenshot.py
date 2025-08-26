@@ -1,5 +1,3 @@
-from typing import Optional
-
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
@@ -10,7 +8,7 @@ from minitap.mobile_use.controllers.mobile_command_controller import (
     take_screenshot as take_screenshot_controller,
 )
 from minitap.mobile_use.graph.state import State
-from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 from minitap.mobile_use.utils.media import compress_base64_jpeg
 from typing_extensions import Annotated
 
@@ -21,7 +19,6 @@ def get_take_screenshot_tool(ctx: MobileUseContext):
         tool_call_id: Annotated[str, InjectedToolCallId],
         state: Annotated[State, InjectedState],
         agent_thought: str,
-        executor_metadata: Optional[ExecutorMetadata],
     ):
         """
         Take a screenshot of the device.
@@ -42,21 +39,18 @@ def get_take_screenshot_tool(ctx: MobileUseContext):
             if has_failed
             else take_screenshot_wrapper.on_success_fn(),
             additional_kwargs={"error": output} if has_failed else {},
+            status="error" if has_failed else "success",
         )
         updates = {
             "agents_thoughts": [agent_thought],
-            "messages": [tool_message],
+            "executor_messages": [tool_message],
         }
         if compressed_image_base64:
             updates["latest_screenshot_base64"] = compressed_image_base64
         return Command(
-            update=take_screenshot_wrapper.handle_executor_state_fields(
+            update=state.sanitize_update(
                 ctx=ctx,
-                state=state,
-                executor_metadata=executor_metadata,
-                tool_message=tool_message,
-                is_failure=has_failed,
-                updates=updates,
+                update=updates,
             ),
         )
 

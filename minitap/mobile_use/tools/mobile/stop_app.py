@@ -8,7 +8,7 @@ from langgraph.types import Command
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.controllers.mobile_command_controller import stop_app as stop_app_controller
 from minitap.mobile_use.graph.state import State
-from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 from typing_extensions import Annotated
 
 
@@ -18,7 +18,6 @@ def get_stop_app_tool(ctx: MobileUseContext):
         tool_call_id: Annotated[str, InjectedToolCallId],
         state: Annotated[State, InjectedState],
         agent_thought: str,
-        executor_metadata: Optional[ExecutorMetadata],
         package_name: Optional[str] = None,
     ):
         """
@@ -33,17 +32,14 @@ def get_stop_app_tool(ctx: MobileUseContext):
             if has_failed
             else stop_app_wrapper.on_success_fn(package_name),
             additional_kwargs={"error": output} if has_failed else {},
+            status="error" if has_failed else "success",
         )
         return Command(
-            update=stop_app_wrapper.handle_executor_state_fields(
+            update=state.sanitize_update(
                 ctx=ctx,
-                state=state,
-                executor_metadata=executor_metadata,
-                tool_message=tool_message,
-                is_failure=has_failed,
-                updates={
+                update={
                     "agents_thoughts": [agent_thought],
-                    "messages": [tool_message],
+                    "executor_messages": [tool_message],
                 },
             ),
         )

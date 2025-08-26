@@ -9,7 +9,7 @@ from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.controllers.mobile_command_controller import SelectorRequest
 from minitap.mobile_use.controllers.mobile_command_controller import tap as tap_controller
 from minitap.mobile_use.graph.state import State
-from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 from typing_extensions import Annotated
 
 
@@ -19,7 +19,6 @@ def get_tap_tool(ctx: MobileUseContext):
         tool_call_id: Annotated[str, InjectedToolCallId],
         state: Annotated[State, InjectedState],
         agent_thought: str,
-        executor_metadata: Optional[ExecutorMetadata],
         selector_request: SelectorRequest,
         index: Optional[int] = None,
     ):
@@ -35,17 +34,14 @@ def get_tap_tool(ctx: MobileUseContext):
             if has_failed
             else tap_wrapper.on_success_fn(selector_request, index),
             additional_kwargs={"error": output} if has_failed else {},
+            status="error" if has_failed else "success",
         )
         return Command(
-            update=tap_wrapper.handle_executor_state_fields(
+            update=state.sanitize_update(
                 ctx=ctx,
-                state=state,
-                executor_metadata=executor_metadata,
-                tool_message=tool_message,
-                is_failure=has_failed,
-                updates={
+                update={
                     "agents_thoughts": [agent_thought],
-                    "messages": [tool_message],
+                    "executor_messages": [tool_message],
                 },
             ),
         )

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
@@ -8,7 +6,7 @@ from minitap.mobile_use.controllers.mobile_command_controller import SelectorReq
 from minitap.mobile_use.controllers.mobile_command_controller import (
     copy_text_from as copy_text_from_controller,
 )
-from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 from pydantic import Field
 from typing_extensions import Annotated
 from minitap.mobile_use.context import MobileUseContext
@@ -22,7 +20,6 @@ def get_copy_text_from_tool(ctx: MobileUseContext):
         tool_call_id: Annotated[str, InjectedToolCallId],
         state: Annotated[State, InjectedState],
         agent_thought: str,
-        executor_metadata: Optional[ExecutorMetadata],
         selector_request: SelectorRequest = Field(
             ..., description="The selector to copy text from"
         ),
@@ -50,17 +47,14 @@ def get_copy_text_from_tool(ctx: MobileUseContext):
             if has_failed
             else copy_text_from_wrapper.on_success_fn(selector_request),
             additional_kwargs={"error": output} if has_failed else {},
+            status="error" if has_failed else "success",
         )
         return Command(
-            update=copy_text_from_wrapper.handle_executor_state_fields(
+            update=state.sanitize_update(
                 ctx=ctx,
-                state=state,
-                executor_metadata=executor_metadata,
-                tool_message=tool_message,
-                is_failure=has_failed,
-                updates={
+                update={
                     "agents_thoughts": [agent_thought],
-                    "messages": [tool_message],
+                    "executor_messages": [tool_message],
                 },
             ),
         )

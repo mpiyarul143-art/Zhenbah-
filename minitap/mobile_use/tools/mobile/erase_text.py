@@ -17,7 +17,7 @@ from minitap.mobile_use.controllers.mobile_command_controller import (
     erase_text as erase_text_controller,
 )
 from minitap.mobile_use.graph.state import State
-from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 from minitap.mobile_use.utils.ui_hierarchy import find_element_by_resource_id
 from minitap.mobile_use.context import MobileUseContext
 
@@ -29,7 +29,6 @@ def get_erase_text_tool(ctx: MobileUseContext):
         state: Annotated[State, InjectedState],
         agent_thought: str,
         input_text_resource_id: str,
-        executor_metadata: Optional[ExecutorMetadata],
         nb_chars: Optional[int] = None,
     ):
         """
@@ -87,18 +86,15 @@ def get_erase_text_tool(ctx: MobileUseContext):
                 nb_char_erased=nb_char_erased, new_text_value=new_text_value
             ),
             additional_kwargs={"error": output} if has_failed else {},
+            status="error" if has_failed else "success",
         )
 
         return Command(
-            update=erase_text_wrapper.handle_executor_state_fields(
+            update=state.sanitize_update(
                 ctx=ctx,
-                state=state,
-                executor_metadata=executor_metadata,
-                tool_message=tool_message,
-                is_failure=has_failed,
-                updates={
+                update={
                     "agents_thoughts": [agent_thought],
-                    "messages": [tool_message],
+                    "executor_messages": [tool_message],
                 },
             ),
         )

@@ -38,8 +38,6 @@ class State(AgentStatePydantic):
     ]
 
     # executor related keys
-    executor_retrigger: Annotated[Optional[bool], "Whether the executor must be retriggered"]
-    executor_failed: Annotated[bool, "Whether a tool call made by the executor failed"]
     executor_messages: Annotated[list[AnyMessage], "Sequential Executor messages", add_messages]
     cortex_last_thought: Annotated[Optional[str], "Last thought of the cortex for the executor"]
 
@@ -47,6 +45,7 @@ class State(AgentStatePydantic):
     agents_thoughts: Annotated[
         list[str],
         "All thoughts and reasons that led to actions (why a tool was called, expected outcomes..)",
+        take_last,
     ]
 
     def sanitize_update(self, ctx: MobileUseContext, update: dict):

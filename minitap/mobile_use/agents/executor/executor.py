@@ -2,7 +2,6 @@ from pathlib import Path
 
 from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.messages.ai import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.graph.state import State
@@ -36,18 +35,6 @@ class ExecutorNode:
                 },
             )
 
-        if len(state.executor_messages) > 0 and isinstance(state.executor_messages[-1], AIMessage):
-            if len(state.executor_messages[-1].tool_calls) > 0:  # type: ignore
-                # A previous tool call raised an uncaught exception while retrigerring the executor
-                return state.sanitize_update(
-                    ctx=self.ctx,
-                    update={
-                        "executor_retrigger": False,
-                        "executor_failed": True,
-                        "executor_messages": [state.messages[-1]],
-                    },
-                )
-
         system_message = Template(
             Path(__file__).parent.joinpath("executor.md").read_text(encoding="utf-8")
         ).render(platform=self.ctx.device.mobile_platform.value)
@@ -62,14 +49,13 @@ class ExecutorNode:
         ]
 
         llm = get_llm(ctx=self.ctx, name="executor")
-        llm_bind_tools_kwargs = {
+        llm_bind_tools_kwargs: dict = {
             "tools": get_tools_from_wrappers(self.ctx, EXECUTOR_WRAPPERS_TOOLS),
-            "tool_choice": "auto",  # automatically select a tool call or none
         }
 
         # ChatGoogleGenerativeAI does not support the "parallel_tool_calls" keyword
         if not isinstance(llm, ChatGoogleGenerativeAI):
-            llm_bind_tools_kwargs["parallel_tool_calls"] = False
+            llm_bind_tools_kwargs["parallel_tool_calls"] = True
 
         llm = llm.bind_tools(**llm_bind_tools_kwargs)
         response = await llm.ainvoke(messages)
