@@ -4,6 +4,7 @@ from typing import List
 
 import psutil
 import requests
+
 from minitap.mobile_use.servers.config import server_settings
 from minitap.mobile_use.servers.device_hardware_bridge import DEVICE_HARDWARE_BRIDGE_PORT
 from minitap.mobile_use.utils.logger import get_server_logger
@@ -44,27 +45,23 @@ def stop_process_gracefully(process: psutil.Process, timeout: int = 5) -> bool:
             logger.success(f"Process {process.pid} ({process.name()}) already terminated")
             return True
 
-        logger.info(f"Stopping process {process.pid} ({process.name()})")
+        logger.debug(f"Stopping process {process.pid} ({process.name()})")
 
         process.terminate()
 
         try:
             process.wait(timeout=timeout)
-            logger.success(f"Process {process.pid} terminated gracefully")
             return True
         except psutil.TimeoutExpired:
             logger.warning(f"Process {process.pid} didn't terminate gracefully, force killing...")
             try:
                 process.kill()
                 process.wait(timeout=2)
-                logger.success(f"Process {process.pid} force killed")
                 return True
             except psutil.NoSuchProcess:
-                logger.success(f"Process {process.pid} already terminated during force kill")
                 return True
 
     except psutil.NoSuchProcess:
-        logger.success(f"Process {process.pid} no longer exists (already terminated)")
         return True
     except (psutil.AccessDenied, psutil.ZombieProcess) as e:
         logger.warning(f"Cannot stop process {process.pid}: {e}")
@@ -167,19 +164,15 @@ def stop_device_hardware_bridge() -> bool:
 
 
 def stop_servers(
-    device_screen_api: bool = False, device_hardware_bridge: bool = False
+    should_stop_screen_api: bool = False, should_stop_hw_bridge: bool = False
 ) -> tuple[bool, bool]:
-    """Stop all servers and return (api_success, bridge_success).
-
-    Args:
-        device_screen_api: If True, stop the Device Screen API
-        device_hardware_bridge: If True, stop the Device Hardware Bridge
+    """Stop the servers and return whether they stopped successfully (api_success, bridge_success).
 
     Returns:
         Tuple of (api_stopped, bridge_stopped) booleans
     """
-    api_success = stop_device_screen_api() if device_screen_api else True
-    bridge_success = stop_device_hardware_bridge() if device_hardware_bridge else True
+    api_success = stop_device_screen_api() if should_stop_screen_api else True
+    bridge_success = stop_device_hardware_bridge() if should_stop_hw_bridge else True
 
     if api_success and bridge_success:
         logger.success("All servers stopped successfully")
@@ -195,7 +188,9 @@ def stop_servers(
 
 def main():
     """Main function to stop all servers."""
-    api_success, bridge_success = stop_servers(device_screen_api=True, device_hardware_bridge=True)
+    api_success, bridge_success = stop_servers(
+        should_stop_screen_api=True, should_stop_hw_bridge=True
+    )
     if api_success and bridge_success:
         return 0
     elif api_success or bridge_success:

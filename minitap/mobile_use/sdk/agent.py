@@ -1,18 +1,32 @@
 import asyncio
-from datetime import datetime
-from pathlib import Path
 import sys
 import tempfile
 import time
+import uuid
+from datetime import datetime
+from pathlib import Path
 from types import NoneType
 from typing import Optional, TypeVar, overload
-import uuid
+
 from adbutils import AdbClient
 from langchain_core.messages import AIMessage
 from pydantic import BaseModel
-from minitap.mobile_use.agents.outputter.outputter import outputter
 
+from minitap.mobile_use.agents.outputter.outputter import outputter
+from minitap.mobile_use.clients.device_hardware_client import DeviceHardwareClient
+from minitap.mobile_use.clients.screen_api_client import ScreenApiClient
 from minitap.mobile_use.config import OutputConfig, record_events
+from minitap.mobile_use.context import (
+    DeviceContext,
+    DevicePlatform,
+    ExecutionSetup,
+    MobileUseContext,
+)
+from minitap.mobile_use.controllers.mobile_command_controller import (
+    ScreenDataResponse,
+    get_screen_data,
+)
+from minitap.mobile_use.controllers.platform_specific_commands_controller import get_first_device
 from minitap.mobile_use.graph.graph import get_graph
 from minitap.mobile_use.graph.state import State
 from minitap.mobile_use.sdk.builders.agent_config_builder import get_default_agent_config
@@ -22,43 +36,28 @@ from minitap.mobile_use.sdk.constants import (
     DEFAULT_SCREEN_API_BASE_URL,
 )
 from minitap.mobile_use.sdk.types.agent import AgentConfig
-from minitap.mobile_use.context import (
-    DeviceContext,
-    DevicePlatform,
-    ExecutionSetup,
-    MobileUseContext,
+from minitap.mobile_use.sdk.types.exceptions import (
+    AgentNotInitializedError,
+    AgentProfileNotFoundError,
+    AgentTaskRequestError,
+    DeviceNotFoundError,
+    ServerStartupError,
 )
-from minitap.mobile_use.clients.device_hardware_client import DeviceHardwareClient
-from minitap.mobile_use.clients.screen_api_client import ScreenApiClient
-from minitap.mobile_use.controllers.mobile_command_controller import (
-    ScreenDataResponse,
-    get_screen_data,
-)
-from minitap.mobile_use.controllers.platform_specific_commands_controller import get_first_device
-
-from minitap.mobile_use.servers.stop_servers import stop_servers
+from minitap.mobile_use.sdk.types.task import AgentProfile, Task, TaskRequest, TaskStatus
 from minitap.mobile_use.servers.device_hardware_bridge import BridgeStatus
 from minitap.mobile_use.servers.start_servers import (
     start_device_hardware_bridge,
     start_device_screen_api,
 )
+from minitap.mobile_use.servers.stop_servers import stop_servers
 from minitap.mobile_use.utils.logger import get_logger
-from minitap.mobile_use.sdk.types.exceptions import (
-    AgentProfileNotFoundError,
-    AgentTaskRequestError,
-    DeviceNotFoundError,
-    ServerStartupError,
-    AgentNotInitializedError,
-)
-from minitap.mobile_use.sdk.types.task import AgentProfile, Task, TaskRequest, TaskStatus
 from minitap.mobile_use.utils.media import (
     create_gif_from_trace_folder,
     create_steps_json_from_trace_folder,
     remove_images_from_trace_folder,
     remove_steps_json_from_trace_folder,
 )
-from minitap.mobile_use.utils.recorder import log_agent_thoughts
-
+from minitap.mobile_use.utils.recorder import log_agent_thought
 
 logger = get_logger(__name__)
 
@@ -262,16 +261,29 @@ class Agent:
                 config={
                     "recursion_limit": task.request.max_steps,
                 },
-                stream_mode=["messages", "custom", "values"],
+                stream_mode=["messages", "custom", "updates", "values"],
             ):
-                stream_mode, content = chunk
+                stream_mode, payload = chunk
                 if stream_mode == "values":
-                    last_state_snapshot = content  # type: ignore
+                    last_state_snapshot = payload  # type: ignore
                     last_state = State(**last_state_snapshot)  # type: ignore
-                    log_agent_thoughts(
-                        agents_thoughts=last_state.agents_thoughts,
-                        output_path=task.request.thoughts_output_path,
-                    )
+                    if task.request.thoughts_output_path:
+                        record_events(
+                            output_path=task.request.thoughts_output_path,
+                            events=last_state.agents_thoughts,
+                        )
+
+                if stream_mode == "updates":
+                    for key, value in payload.items():  # type: ignore
+                        if value and "agents_thoughts" in value:
+                            new_thoughts = value["agents_thoughts"]
+                            last_item = new_thoughts[-1] if new_thoughts else None
+                            if last_item:
+                                log_agent_thought(
+                                    prefix=key,
+                                    agent_thought=last_item,
+                                )
+
             if not last_state:
                 err = f"[{task_name}] No result received from graph"
                 logger.warning(err)
@@ -302,12 +314,12 @@ class Agent:
             self._finalize_tracing(task=task, context=context)
         return output
 
-    def clean(self):
-        if not self._initialized:
+    def clean(self, force: bool = False):
+        if not self._initialized and not force:
             return
         screen_api_ok, hw_bridge_ok = stop_servers(
-            device_screen_api=not self._is_default_screen_api,
-            device_hardware_bridge=not self._is_default_hw_bridge,
+            should_stop_screen_api=self._is_default_screen_api,
+            should_stop_hw_bridge=self._is_default_hw_bridge,
         )
         if not screen_api_ok:
             logger.warning("Failed to stop Device Screen API.")
