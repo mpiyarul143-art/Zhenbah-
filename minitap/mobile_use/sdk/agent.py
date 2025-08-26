@@ -314,12 +314,12 @@ class Agent:
             self._finalize_tracing(task=task, context=context)
         return output
 
-    def clean(self):
-        if not self._initialized:
+    def clean(self, force: bool = False):
+        if not self._initialized and not force:
             return
         screen_api_ok, hw_bridge_ok = stop_servers(
-            device_screen_api=not self._is_default_screen_api,
-            device_hardware_bridge=not self._is_default_hw_bridge,
+            should_stop_screen_api=self._is_default_screen_api,
+            should_stop_hw_bridge=self._is_default_hw_bridge,
         )
         if not screen_api_ok:
             logger.warning("Failed to stop Device Screen API.")
