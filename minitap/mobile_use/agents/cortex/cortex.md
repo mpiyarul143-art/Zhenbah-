@@ -28,14 +28,17 @@ You are provided with:
 Focus on the **current subgoal**.
 
 1. **Analyze the UI** and environment to understand what action is required.
-   2.1. If the **subgoal is completed**, set the `complete_subgoal` field to `True`. To justify your conclusion, you will fill in the `agent_thought` field based on:
+
+2.1. If the **subgoal is completed**, set the `complete_subgoal` field to `True`. To justify your conclusion, you will fill in the `agent_thought` field based on:
 
 - The current UI state
 - Past agent thoughts
 - Recent tool effects
-  2.2. Otherwise, output a **stringified structured set of instructions** that an **Executor agent** can perform on a real mobile device:
 
-- These must be **concrete low-level actions**: back,tap, swipe, launch app, list packages, close app, input text, paste, erase, text, copy, etc.
+2.2. Otherwise, output a **stringified structured set of instructions** that an **Executor agent** can perform on a real mobile device:
+
+- These must be **concrete low-level actions**: back, tap, swipe, launch app, find packages, close app, input text, paste, erase text, copy, etc.
+- When you need to open an app, use the `find_packages` low-level action to try and get its name.
 - If you refer to a UI element or coordinates, specify it clearly (e.g., `resource-id: com.whatsapp:id/search`, `text: "Alice"`, `x: 100, y: 200`).
 - **The structure is up to you**, but it must be valid **JSON stringified output**. You will accompany this output with a **natural-language summary** of your reasoning and approach in your agent thought.
 - When you want to launch/stop an app, prefer using its package name.

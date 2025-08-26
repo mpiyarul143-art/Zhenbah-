@@ -46,7 +46,7 @@ Call the `tap_on_element` tool with:
 
 ### ⚙️ Tools
 
-- Tools may include actions like: `tap`, `swipe`, `start_app`, `stop_app`, `list_packages`, `get_current_focus`, etc.
+- Tools may include actions like: `tap`, `swipe`, `start_app`, `stop_app`, `find_packages`, `get_current_focus`, etc.
 - You **must not hardcode tool definitions** here.
 - Just use the right tool based on what the `structured_decisions` requires.
 - The tools are provided dynamically via LangGraph's tool binding mechanism.
