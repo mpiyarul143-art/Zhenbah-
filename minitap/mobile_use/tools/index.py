@@ -5,7 +5,7 @@ from minitap.mobile_use.tools.mobile.copy_text_from import copy_text_from_wrappe
 from minitap.mobile_use.tools.mobile.erase_text import erase_text_wrapper
 from minitap.mobile_use.tools.mobile.input_text import input_text_wrapper
 from minitap.mobile_use.tools.mobile.launch_app import launch_app_wrapper
-from minitap.mobile_use.tools.mobile.list_packages import list_packages_wrapper
+from minitap.mobile_use.tools.mobile.find_packages import find_packages_wrapper
 from minitap.mobile_use.tools.mobile.long_press_on import long_press_on_wrapper
 from minitap.mobile_use.tools.mobile.open_link import open_link_wrapper
 from minitap.mobile_use.tools.mobile.paste_text import paste_text_wrapper
@@ -29,7 +29,7 @@ EXECUTOR_WRAPPERS_TOOLS = [
     take_screenshot_wrapper,
     copy_text_from_wrapper,
     input_text_wrapper,
-    list_packages_wrapper,
+    find_packages_wrapper,
     launch_app_wrapper,
     stop_app_wrapper,
     paste_text_wrapper,
