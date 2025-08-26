@@ -81,7 +81,7 @@ def check_service_health(port: int, service_name: str) -> bool:
             return False
 
         if response.status_code == 200:
-            logger.warning(f"{service_name} is still responding on port {port}")
+            logger.debug(f"{service_name} is still responding on port {port}")
             return True
     except requests.exceptions.RequestException:
         pass
@@ -164,7 +164,7 @@ def stop_device_hardware_bridge() -> bool:
 
 
 def stop_servers(
-    should_stop_screen_api: bool = False, should_stop_hw_bridge: bool = False
+    should_stop_screen_api: bool = True, should_stop_hw_bridge: bool = True
 ) -> tuple[bool, bool]:
     """Stop the servers and return whether they stopped successfully (api_success, bridge_success).
 
