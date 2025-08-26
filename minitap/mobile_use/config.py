@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     XAI_API_KEY: Optional[SecretStr] = None
     OPEN_ROUTER_API_KEY: Optional[SecretStr] = None
 
+    OPENAI_BASE_URL: Optional[str] = None
+
     DEVICE_SCREEN_API_BASE_URL: Optional[str] = None
     DEVICE_HARDWARE_BRIDGE_BASE_URL: Optional[str] = None
     ADB_HOST: Optional[str] = None
