@@ -1,11 +1,9 @@
 services:
   mobile-use-full-ip:
+    image: minitap/mobile-use:latest
     container_name: mobile-use-full
     user: "mobile-use:mobile-use"
     restart: no
-    build:
-      context: .
-      dockerfile: Dockerfile
     env_file:
       - .env
     environment:
@@ -17,12 +15,10 @@ services:
       - ./llm-config.override.jsonc:/app/llm-config.override.jsonc
 
   mobile-use-full-usb:
+    image: minitap/mobile-use:latest
     container_name: mobile-use-full-usb
     user: "mobile-use:mobile-use"
     restart: no
-    build:
-      context: .
-      dockerfile: Dockerfile
     env_file:
       - .env
     privileged: true

@@ -39,6 +39,7 @@ def get_openai_llm(
     client = ChatOpenAI(
         model=model_name,
         api_key=settings.OPENAI_API_KEY,
+        base_url=settings.OPENAI_BASE_URL,
         temperature=temperature,
     )
     return client
