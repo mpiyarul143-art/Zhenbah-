@@ -419,8 +419,6 @@ class Agent:
             structured_decisions=None,
             agents_thoughts=[],
             remaining_steps=task.request.max_steps,
-            executor_retrigger=False,
-            executor_failed=False,
             executor_messages=[],
             cortex_last_thought=None,
         )

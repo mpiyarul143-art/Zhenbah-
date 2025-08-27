@@ -357,8 +357,6 @@ if __name__ == "__main__":
         focused_app_info=None,
         device_date="",
         structured_decisions=None,
-        executor_retrigger=False,
-        executor_failed=False,
         executor_messages=[],
         cortex_last_thought="",
         agents_thoughts=[],

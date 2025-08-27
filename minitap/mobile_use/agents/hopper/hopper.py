@@ -1,8 +1,7 @@
 from pathlib import Path
-from typing import Sequence
 
 from jinja2 import Template
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.services.llm import get_llm
 from pydantic import BaseModel, Field
@@ -20,20 +19,16 @@ class HopperOutput(BaseModel):
 
 async def hopper(
     ctx: MobileUseContext,
-    initial_goal: str,
-    messages: Sequence[BaseMessage],
+    request: str,
     data: str,
 ) -> HopperOutput:
     print("Starting Hopper Agent", flush=True)
     system_message = Template(
         Path(__file__).parent.joinpath("hopper.md").read_text(encoding="utf-8")
-    ).render(
-        initial_goal=initial_goal,
-        messages=messages,
-    )
+    ).render()
     messages = [
         SystemMessage(content=system_message),
-        HumanMessage(content=data),
+        HumanMessage(content=f"{request}\nHere is the data you must dig:\n{data}"),
     ]
 
     llm = get_llm(ctx=ctx, name="hopper", is_utils=True, temperature=0)

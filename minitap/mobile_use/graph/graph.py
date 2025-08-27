@@ -6,13 +6,10 @@ from langchain_core.messages import (
 from langgraph.constants import END, START
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.prebuilt import ToolNode
 from minitap.mobile_use.agents.contextor.contextor import ContextorNode
 from minitap.mobile_use.agents.cortex.cortex import CortexNode
 from minitap.mobile_use.agents.executor.executor import ExecutorNode
-from minitap.mobile_use.agents.executor.executor_context_cleaner import (
-    executor_context_cleaner_node,
-)
+from minitap.mobile_use.agents.executor.tool_node import ExecutorToolNode
 from minitap.mobile_use.agents.orchestrator.orchestrator import OrchestratorNode
 from minitap.mobile_use.agents.planner.planner import PlannerNode
 from minitap.mobile_use.agents.planner.utils import (
@@ -21,6 +18,7 @@ from minitap.mobile_use.agents.planner.utils import (
     one_of_them_is_failure,
 )
 from minitap.mobile_use.agents.summarizer.summarizer import SummarizerNode
+from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.graph.state import State
 from minitap.mobile_use.tools.index import EXECUTOR_WRAPPERS_TOOLS, get_tools_from_wrappers
@@ -77,17 +75,6 @@ def post_executor_gate(
     return "skip"
 
 
-def post_executor_tools_gate(
-    state: State,
-) -> Literal["continue", "failed", "done"]:
-    logger.info("Starting post_executor_tools_gate")
-    if state.executor_failed:
-        return "failed"
-    if state.executor_retrigger:
-        return "continue"
-    return "done"
-
-
 async def get_graph(ctx: MobileUseContext) -> CompiledStateGraph:
     graph_builder = StateGraph(State)
 
@@ -100,12 +87,12 @@ async def get_graph(ctx: MobileUseContext) -> CompiledStateGraph:
     graph_builder.add_node("cortex", CortexNode(ctx))
 
     graph_builder.add_node("executor", ExecutorNode(ctx))
-    executor_tool_node = ToolNode(
-        get_tools_from_wrappers(ctx=ctx, wrappers=EXECUTOR_WRAPPERS_TOOLS)
+    executor_tool_node = ExecutorToolNode(
+        tools=get_tools_from_wrappers(ctx=ctx, wrappers=EXECUTOR_WRAPPERS_TOOLS),
+        messages_key=EXECUTOR_MESSAGES_KEY,
     )
     graph_builder.add_node("executor_tools", executor_tool_node)
 
-    graph_builder.add_node("executor_context_cleaner", executor_context_cleaner_node)
     graph_builder.add_node("summarizer", SummarizerNode(ctx))
 
     # Linking nodes
@@ -132,18 +119,9 @@ async def get_graph(ctx: MobileUseContext) -> CompiledStateGraph:
     graph_builder.add_conditional_edges(
         "executor",
         post_executor_gate,
-        {"invoke_tools": "executor_tools", "skip": "executor_context_cleaner"},
+        {"invoke_tools": "executor_tools", "skip": "summarizer"},
     )
-    graph_builder.add_conditional_edges(
-        "executor_tools",
-        post_executor_tools_gate,
-        {
-            "continue": "executor",
-            "done": "executor_context_cleaner",
-            "failed": "executor_context_cleaner",
-        },
-    )
-    graph_builder.add_edge("executor_context_cleaner", "summarizer")
+    graph_builder.add_edge("executor_tools", "summarizer")
     graph_builder.add_edge("summarizer", "contextor")
 
     return graph_builder.compile()

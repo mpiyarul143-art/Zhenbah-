@@ -1,13 +1,12 @@
-from typing import Optional
-
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langgraph.types import Command
+from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.controllers.mobile_command_controller import (
     launch_app as launch_app_controller,
 )
-from minitap.mobile_use.tools.tool_wrapper import ExecutorMetadata, ToolWrapper
+from minitap.mobile_use.tools.tool_wrapper import ToolWrapper
 from typing_extensions import Annotated
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.graph.state import State
@@ -20,7 +19,6 @@ def get_launch_app_tool(ctx: MobileUseContext):
         tool_call_id: Annotated[str, InjectedToolCallId],
         state: Annotated[State, InjectedState],
         agent_thought: str,
-        executor_metadata: Optional[ExecutorMetadata],
         package_name: str,
     ):
         """
@@ -34,17 +32,14 @@ def get_launch_app_tool(ctx: MobileUseContext):
             if has_failed
             else launch_app_wrapper.on_success_fn(package_name),
             additional_kwargs={"error": output} if has_failed else {},
+            status="error" if has_failed else "success",
         )
         return Command(
-            update=launch_app_wrapper.handle_executor_state_fields(
+            update=state.sanitize_update(
                 ctx=ctx,
-                state=state,
-                executor_metadata=executor_metadata,
-                tool_message=tool_message,
-                is_failure=has_failed,
-                updates={
+                update={
                     "agents_thoughts": [agent_thought],
-                    "messages": [tool_message],
+                    EXECUTOR_MESSAGES_KEY: [tool_message],
                 },
             ),
         )
