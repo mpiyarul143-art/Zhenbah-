@@ -81,7 +81,7 @@ def check_service_health(port: int, service_name: str) -> bool:
             return False
 
         if response.status_code == 200:
-            logger.warning(f"{service_name} is still responding on port {port}")
+            logger.debug(f"{service_name} is still responding on port {port}")
             return True
     except requests.exceptions.RequestException:
         pass
