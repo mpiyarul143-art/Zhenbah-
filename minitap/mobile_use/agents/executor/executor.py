@@ -3,6 +3,7 @@ from pathlib import Path
 from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.graph.state import State
 from minitap.mobile_use.services.llm import get_llm
@@ -64,7 +65,7 @@ class ExecutorNode:
             ctx=self.ctx,
             update={
                 "cortex_last_thought": cortex_last_thought,
-                "executor_messages": [response],
+                EXECUTOR_MESSAGES_KEY: [response],
                 "messages": [response],
             },
         )

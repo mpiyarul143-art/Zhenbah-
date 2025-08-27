@@ -12,6 +12,7 @@ from langchain_core.messages import (
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from minitap.mobile_use.agents.cortex.types import CortexOutput
 from minitap.mobile_use.agents.planner.utils import get_current_subgoal
+from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.graph.state import State
 from minitap.mobile_use.services.llm import get_llm, with_fallback
@@ -90,7 +91,7 @@ class CortexNode:
                 "focused_app_info": None,
                 "device_date": None,
                 # Executor related fields
-                "executor_messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES)],
+                EXECUTOR_MESSAGES_KEY: [RemoveMessage(id=REMOVE_ALL_MESSAGES)],
                 "cortex_last_thought": response.agent_thought,
             },
         )

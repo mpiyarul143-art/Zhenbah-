@@ -7,6 +7,7 @@ from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
 from typing_extensions import Annotated
 
+from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.controllers.mobile_command_controller import (
     ScreenDataResponse,
     WaitTimeout,
@@ -94,7 +95,7 @@ def get_erase_text_tool(ctx: MobileUseContext):
                 ctx=ctx,
                 update={
                     "agents_thoughts": [agent_thought],
-                    "executor_messages": [tool_message],
+                    EXECUTOR_MESSAGES_KEY: [tool_message],
                 },
             ),
         )

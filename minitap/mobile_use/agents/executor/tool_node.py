@@ -37,7 +37,7 @@ class ExecutorToolNode(ToolNode):
         return loop.run_until_complete(
             self.__func(is_async=False, input=input, config=config, store=store)
         )
-    
+
     async def __func(
         self,
         is_async: bool,

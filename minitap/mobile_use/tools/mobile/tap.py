@@ -5,6 +5,7 @@ from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
+from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.controllers.mobile_command_controller import SelectorRequest
 from minitap.mobile_use.controllers.mobile_command_controller import tap as tap_controller
@@ -41,7 +42,7 @@ def get_tap_tool(ctx: MobileUseContext):
                 ctx=ctx,
                 update={
                     "agents_thoughts": [agent_thought],
-                    "executor_messages": [tool_message],
+                    EXECUTOR_MESSAGES_KEY: [tool_message],
                 },
             ),
         )
