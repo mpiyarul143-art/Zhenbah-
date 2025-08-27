@@ -19,7 +19,7 @@ class HopperOutput(BaseModel):
 
 async def hopper(
     ctx: MobileUseContext,
-    user_goal: str,
+    request: str,
     data: str,
 ) -> HopperOutput:
     print("Starting Hopper Agent", flush=True)
@@ -28,7 +28,7 @@ async def hopper(
     ).render()
     messages = [
         SystemMessage(content=system_message),
-        HumanMessage(content=f"{user_goal}\nHere is the data you must dig:\n{data}"),
+        HumanMessage(content=f"{request}\nHere is the data you must dig:\n{data}"),
     ]
 
     llm = get_llm(ctx=ctx, name="hopper", is_utils=True, temperature=0)

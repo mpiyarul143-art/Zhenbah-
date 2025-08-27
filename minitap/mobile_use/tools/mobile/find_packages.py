@@ -29,7 +29,7 @@ def get_find_packages_tool(ctx: MobileUseContext):
         try:
             hopper_output: HopperOutput = await hopper(
                 ctx=ctx,
-                user_goal=f"I'm looking for the package names of the following apps: {appNames}",
+                request=f"I'm looking for the package names of the following apps: {appNames}",
                 data=output,
             )
             tool_message = ToolMessage(
