@@ -164,7 +164,7 @@ def stop_device_hardware_bridge() -> bool:
 
 
 def stop_servers(
-    should_stop_screen_api: bool = True, should_stop_hw_bridge: bool = True
+    should_stop_screen_api: bool = False, should_stop_hw_bridge: bool = False
 ) -> tuple[bool, bool]:
     """Stop the servers and return whether they stopped successfully (api_success, bridge_success).
 

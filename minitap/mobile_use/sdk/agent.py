@@ -126,7 +126,10 @@ class Agent:
                     f"Server start failed, attempting restart "
                     f"{restart_attempt}/{server_restart_attempts}"
                 )
-                stop_servers()
+                stop_servers(
+                    should_stop_screen_api=self._is_default_screen_api,
+                    should_stop_hw_bridge=self._is_default_hw_bridge,
+                )
             else:
                 error_msg = "Mobile-use servers failed to start after all restart attempts."
                 logger.error(error_msg)
